@@ -47,7 +47,7 @@ func (wc WC) Reducer(key string, value []string, out chan mr.Pair) {
 func main() {
 	wc := WC{}
 	// Ouput all key-value pairs
-	out := mr.Run(wc, "Put Your Path here!")
+	out := mr.Run(wc, "/home/naidutumati/bible/")
 	for p := range out {
 		f := p.First
 		s := p.Second
