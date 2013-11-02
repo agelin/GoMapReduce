@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type maxTemp struct{}
@@ -53,7 +54,7 @@ func (maxTemp maxTemp) Reducer(key string, value []string, out chan mr.Pair) {
 		if v != "\\N" {
 			temperature, err := strconv.ParseFloat(v, 64) //strconv.Atoi(v)
 			if err != nil {
-				fmt.Fprintln(os.Stderr, "error converting \"", v, "\" to integer, err:", err)
+				fmt.Fprintln(os.Stderr, "error converting \"", v, "\" to float, err:", err)
 				os.Exit(-1)
 			}
 
@@ -67,14 +68,20 @@ func (maxTemp maxTemp) Reducer(key string, value []string, out chan mr.Pair) {
 }
 
 func main() {
+
+	t0 := time.Now()
+	
 	maxTemperature := maxTemp{}
 	fmt.Println(" ====== GETTING THE MAXIMUM TEMPERATURES FROM THE DATASET ====== ")
 	// Ouput all key-value pairs
-	out := mr.Run(maxTemperature, "/home/nitin/cloudAssignment")
+	out := mr.Run(maxTemperature, "/home/nitin/cloudAssignment/inputs")
 
 	for p := range out {
 		f := p.First
 		s := p.Second
 		fmt.Println(f, " : ", s)
 	}
+	
+	t1 := time.Now()
+	fmt.Printf("The MR call took %v to run.\n", t1.Sub(t0))
 }
