@@ -1,6 +1,13 @@
-
 Observations :
 --------------
 
 System          : lin116-19.cise.ufl.edu
-Time in Hadoop  : 7923 ms
+Time in Hadoop  
+      Run 1: 7923 ms
+      Run 2: 8334 ms
+      Run 3: 7873 ms
+      Run 4: 7869 ms
+      Run 5: 7768 ms
+      Run 6: 7742 ms
+      
+ 
