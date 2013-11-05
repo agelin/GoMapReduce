@@ -2,12 +2,52 @@ Observations :
 --------------
 
 System          : lin116-19.cise.ufl.edu
+Size of Data-Set : 10285 KB
+
 Time in Hadoop  
-      Run 1: 7923 ms
-      Run 2: 8334 ms
-      Run 3: 7873 ms
-      Run 4: 7869 ms
-      Run 5: 7768 ms
-      Run 6: 7742 ms
+            Run 1: 7923 ms
+            Run 2: 8334 ms
+            Run 3: 7873 ms
+            Run 4: 7869 ms
+            Run 5: 7768 ms
+            Run 6: 7742 ms
+      AvgRun Time: 7918 ms 
       
- 
+Time in GoMapReduce
+            Run 1: 35336 ms
+            Run 2: 32441 ms
+            Run 3: 40379 ms
+            Run 4: 32930 ms
+            Run 5: 33474 ms
+            Run 6: 32380 ms
+      AvgRun Time: 34490 ms
+
+
+Size of Data-Set : 5009 KB
+
+Time in GoMapReduce
+            Run 1: 13452 ms
+            Run 2: 13138 ms
+            Run 3: 13321 ms
+            Run 4: 13767 ms
+            Run 5: 11442 ms
+            Run 6: 13521 ms
+      AvgRun Time: 13106 ms
+
+Time in Hadoop
+
+Size of Date-Set : 1534 KB
+
+Time in GoMapReduce
+            Run 1: 3844 ms
+            Run 2: 3334 ms
+            Run 3: 3318 ms
+            Run 4: 3349 ms
+            Run 5: 3198 ms
+            Run 6: 3876 ms
+      AvgRun Time: 3486.5 ms
+
+
+
+
+
