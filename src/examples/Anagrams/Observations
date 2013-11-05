@@ -1,6 +1,5 @@
 Observations :
 --------------
-
 System          : lin116-19.cise.ufl.edu
 Size of Data-Set : 10285 KB
 
@@ -14,13 +13,13 @@ Time in Hadoop
       AvgRun Time: 7918 ms 
       
 Time in GoMapReduce
-            Run 1: 35336 ms
-            Run 2: 32441 ms
-            Run 3: 40379 ms
-            Run 4: 32930 ms
-            Run 5: 33474 ms
-            Run 6: 32380 ms
-      AvgRun Time: 34490 ms
+            Run 1: 8001 ms
+            Run 2: 7792 ms
+            Run 3: 7809 ms
+            Run 4: 7828 ms
+            Run 5: 7843 ms
+            Run 6: 7797 ms
+      AvgRun Time: 7845 ms
 
 
 Size of Data-Set : 5009 KB
