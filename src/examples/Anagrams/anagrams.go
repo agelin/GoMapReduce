@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"bufio"
 	"strings"
+	"time"
 )
 
 type AG struct{}
@@ -49,11 +50,23 @@ func (ag AG) Reducer(key string, val []string, out chan mr.Pair){
 }
 
 func main(){
-	
-	ag := AG{}
-	out := mr.Run(ag,"/home/jd/Downloads/Cloud/Cloud-Project/DataSets/Anagrams-DataSet/SingleFile")
-	
-	for p := range out {
-		fmt.Println(p.First + " - " + p.Second)	
-	}
+	        ag := AG{}
+
+        of,err := os.Create("/home/jd/Documents/programs/go-lang/scrap/dataset/Output")
+        defer of.Close()
+
+        if err!=nil {
+                return
+        }
+
+        t0 := time.Now()
+        out := mr.Run(ag,"/cise/homes/jaideep/Cloud/Hadoop/hadoop-1.2.1/Examples/DataSets/Anagrams/AnagramsInp")
+
+        for p := range out {
+                anagramWord := p.First + " - " + p.Second
+                of.WriteString(anagramWord)
+                of.WriteString("\n")
+        }
+        fmt.Print("Time Taken: ")
+        fmt.Println(time.Since(t0))
 }
