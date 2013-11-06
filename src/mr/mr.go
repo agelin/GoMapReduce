@@ -4,11 +4,19 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
+	"strconv"
 )
 
 type Pair struct {
 	First  string
 	Second string
+}
+
+// Spitter Configuration
+type SplitConf struct {
+	sep string		// Seperator
+	count int		// Number of Seperator's after which a split will happen 
 }
 
 const ( 
@@ -19,6 +27,35 @@ type MapReduce interface {
 	Mapper(key, value string, out chan Pair)
 	Reducer(key string, value []string, out chan Pair)
 }
+
+
+
+func Splitter(str string, conf SplitConf) []string {
+	sep := conf.sep
+	counter:= 0
+	start:=0
+	j:=0
+	n := strings.Count(str, sep)/conf.count +1
+	newStr := make([]string, n)
+
+	for i:=0;i<len(str);i++{
+		if(str[i]==sep[0]) {
+			counter++
+		}
+	
+		if(counter==conf.count){
+			newStr[j]=str[start:i]
+			start = i + len(sep)
+			j++
+			counter=0
+		}
+	}
+	if(counter>0){
+		newStr[j]=str[start:len(str)-1]
+	}
+	return newStr[0:j+1]	
+}
+
 
 // Inputs a pointer to a MapReduce object and the input directory
 // with the files
@@ -42,12 +79,22 @@ func Run(mr MapReduce, inputdir string) chan Pair{
 				fmt.Fprintln(os.Stderr, "could not read file, err:", err)
 				os.Exit(-1)
 			}
-			ch := make(chan Pair)
-			mappers[v.Name()] = ch	
-			go func (n string, d []byte, ch chan Pair) {
-				mr.Mapper(n, string(d), ch)
-				close(ch)
-			}(v.Name(), data, ch)
+			
+			splitConf := SplitConf{"\n",5}  //Configure the Splitter i.e., seperator and count
+			mapperData := Splitter(string(data),splitConf)
+			
+			for i,j:= range mapperData{
+			
+				mapperName := v.Name()+"$"+strconv.Itoa(i)
+				ch := make(chan Pair)
+				mappers[mapperName] = ch
+		
+					go func (name string, d string, ch chan Pair) {
+						mr.Mapper(name, d, ch)
+						close(ch)
+					}(mapperName, j, ch)
+			}
+			
 		}
 	}
 	
