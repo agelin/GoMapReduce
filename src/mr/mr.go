@@ -73,7 +73,6 @@ func Run(mr MapReduce, inputdir string) chan Pair{
 	for _, v := range files {
 		if !v.IsDir() {
 			
-			go func (v os.FileInfo) {
 				fullPath := inputdir + "/" +  v.Name()
 				//fmt.Println(fullPath)
 				data, err := ioutil.ReadFile(fullPath)
@@ -82,7 +81,7 @@ func Run(mr MapReduce, inputdir string) chan Pair{
 					os.Exit(-1)
 				}
 				
-				splitConf := SplitConf{"\n",100}  // Configure the Splitter i.e., seperator and count
+				splitConf := SplitConf{"\n",200}  // Configure the Splitter i.e., seperator and count
 				mapperData := Splitter(string(data),splitConf)
 				
 				for i,j:= range mapperData{
@@ -97,7 +96,6 @@ func Run(mr MapReduce, inputdir string) chan Pair{
 					}(mapperName, j, ch)
 					
 				}
-			}(v)
 			
 		}
 	}
