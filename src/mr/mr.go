@@ -72,28 +72,32 @@ func Run(mr MapReduce, inputdir string) chan Pair{
 	mappers := make(map[string]chan Pair)
 	for _, v := range files {
 		if !v.IsDir() {
-			fullPath := inputdir + "/" + v.Name()
-			//fmt.Println(fullPath)
-			data, err := ioutil.ReadFile(fullPath)
-			if err != nil {
-				fmt.Fprintln(os.Stderr, "could not read file, err:", err)
-				os.Exit(-1)
-			}
 			
-			splitConf := SplitConf{"\n",5}  //Configure the Splitter i.e., seperator and count
-			mapperData := Splitter(string(data),splitConf)
+			go func (v os.FileInfo) {
+				fullPath := inputdir + "/" +  v.Name()
+				//fmt.Println(fullPath)
+				data, err := ioutil.ReadFile(fullPath)
+				if err != nil {
+					fmt.Fprintln(os.Stderr, "could not read file, err:", err)
+					os.Exit(-1)
+				}
+				
+				splitConf := SplitConf{"\n",100}  // Configure the Splitter i.e., seperator and count
+				mapperData := Splitter(string(data),splitConf)
+				
+				for i,j:= range mapperData{
+				
+					mapperName := v.Name()+"$"+strconv.Itoa(i)  // $ can be latter used to split
+					ch := make(chan Pair)
+					mappers[mapperName] = ch
 			
-			for i,j:= range mapperData{
-			
-				mapperName := v.Name()+"$"+strconv.Itoa(i)
-				ch := make(chan Pair)
-				mappers[mapperName] = ch
-		
 					go func (name string, d string, ch chan Pair) {
 						mr.Mapper(name, d, ch)
 						close(ch)
 					}(mapperName, j, ch)
-			}
+					
+				}
+			}(v)
 			
 		}
 	}
