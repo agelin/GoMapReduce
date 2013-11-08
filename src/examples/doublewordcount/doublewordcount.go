@@ -64,7 +64,7 @@ func (wc WC) Reducer(key string, value []string, out chan mr.Pair) {
 
 func main() {
 	wc := WC{}
-	of,err := os.Create("/home/srikanth/New/Output")
+	of,err := os.Create("/cise/homes/kota/Output12")
         defer of.Close()
 
         if err!=nil {
@@ -72,7 +72,7 @@ func main() {
         }
 	 t0 := time.Now()
 	// Ouput all key-value pairs
-	out := mr.Run(wc, "/home/srikanth/New")
+	out := mr.Run(wc, "/cise/homes/kota/input/")
 	for p := range out {
                 single := p.First + " - " + p.Second
                 of.WriteString(single)
