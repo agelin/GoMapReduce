@@ -2,8 +2,54 @@ Observations :
 --------------
 System : lin116-19.cise.ufl.edu
 
-Average Time in Hadoop: 12103 ms
+Hadoop:
 
+Dataset 1:
 
+Time: 5038
+Time: 5050
+Time: 5076
+Time: 5094
+Time: 5074
 
-Average Time in GoMapReduce: 7111 ms
+Average time: 5066 vs 2174 in Go
+
+Dataset 2:
+
+Time: 8098
+Time: 8105
+Time: 8100
+Time: 8099
+Time: 8069
+
+Average time: 8094.5 vs 4384 in Go
+
+Dataset 3:
+
+Time: 10112
+Time: 10088
+Time: 10130
+Time: 10071
+Time: 10055
+
+Average time: 10091 vs 6640 in Go
+
+Dataset 4:
+
+Time: 12139
+Time: 11016
+Time: 10997
+Time: 12104
+Time: 12063
+
+Average time: 11664 vs 9084 in Go
+
+Dataset 5:
+
+Time: 14045
+Time: 14104
+Time: 12924
+Time: 14068
+Time: 14110
+
+Average time: 13850 vs 11112 in Go
