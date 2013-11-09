@@ -53,3 +53,55 @@ Time: 14068
 Time: 14110
 
 Average time: 13850 vs 11112 in Go
+
+Go MapReduce:
+
+Dataset 1:
+
+Time: 2178
+Time: 2166
+Time: 2176
+Time: 2169
+Time: 2176
+
+Average time: 2173
+
+Dataset 2: 
+
+Time: 4377
+Time: 4381
+Time: 4401
+Time: 4366
+Time: 4397
+
+Average time: 4384
+
+Dataset 3:
+
+Time: 6545
+Time: 6683
+Time: 6689
+Time: 6585
+Time: 6698
+
+Average time: 6640
+
+Dataset 4:
+
+Time: 9012
+Time: 9116
+TIme: 9048
+Time: 9121
+TIme: 9036
+
+Average time: 9084 
+
+Dataset 5:
+
+Time: 11126
+Time: 11088
+Time: 11128
+Time: 11123
+Time: 11093
+
+Average time: 11112
