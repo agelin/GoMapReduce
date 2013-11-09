@@ -57,15 +57,22 @@ func (wc WC) Reducer(key string, value []string, out chan mr.Pair) {
 func main() {
 	wc := WC{}
 	// Ouput all key-value pairs
-	of,err := os.Create("/cise/homes/ttumati/output")
+	//of,err := os.Create("/cise/homes/ttumati/output")
+	ResultsFile := strings.Join([]string{os.Args[2],"/Results"},"")			
+		RespTimeFile := strings.Join([]string{os.Args[2],"/ResponseTime"},"")
+        of1,err := os.Create(ResultsFile)
+        of2,err := os.Create(RespTimeFile)
         //defer of.Close()
-
+//defer of1.Close()
+		//defer of2.Close()
         if err!=nil {
                 return
         }
 	 t0 := time.Now()
-	out := mr.Run(wc, "/cise/homes/ttumati/input/")
-	w := bufio.NewWriter(of)
+	//out := mr.Run(wc, "/cise/homes/ttumati/input/")
+	out := mr.Run(wc, os.Args[1])
+	w := bufio.NewWriter(of1)
+	w2 := bufio.NewWriter(of2)
 	for p := range out {
 		f := p.First
 		s := p.Second
@@ -78,9 +85,9 @@ func main() {
 	}
 	w.Flush()
 	
-	 fmt.Print("Time Taken: ")
-        fmt.Println(time.Since(t0))
-	
+	 timeTaken:= "TimeTaken = " + time.Since(t0).String()  
+	 fmt.Fprintln(w2, timeTaken)
+	w2.Flush()
 }
 
 
