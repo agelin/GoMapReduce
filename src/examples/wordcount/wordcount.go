@@ -7,6 +7,7 @@ import (
 	"mr"
 	"strings"
 	"strconv"
+	"time"
 )
 
 type WC struct{}
@@ -46,12 +47,28 @@ func (wc WC) Reducer(key string, value []string, out chan mr.Pair) {
 
 func main() {
 	wc := WC{}
+	of,err := os.Create("/cise/homes/kota/Output123")
+        defer of.Close()
+
+        if err!=nil {
+                return
+        }
+	 t0 := time.Now()
 	// Ouput all key-value pairs
-	out := mr.Run(wc, "/home/naidutumati/bible/")
+	out := mr.Run(wc, "/cise/homes/kota/input/")
+	for p := range out {
+                single := p.First + " - " + p.Second
+                of.WriteString(single)
+                of.WriteString("\n")
+        }
+        fmt.Print("Time Taken: ")
+        fmt.Println(time.Since(t0))
+	/*
 	for p := range out {
 		f := p.First
 		s := p.Second
 		fmt.Println(f, " ", s)
 	}
+	*/
 	
 }

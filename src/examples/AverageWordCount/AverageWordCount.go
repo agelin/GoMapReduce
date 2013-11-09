@@ -54,6 +54,7 @@ func (wc WC) Reducer(key string, value []string, out chan mr.Pair) {
 func main() {
 	  
 	wc := WC{}
+	//File output
 	of,err := os.Create("/home/srikanth/New/Output")
         defer of.Close()
 
