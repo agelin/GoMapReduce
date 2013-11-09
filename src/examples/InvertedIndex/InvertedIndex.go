@@ -64,6 +64,9 @@ func main() {
 		f := p.First
 		s := p.Second
 		fmt.Println(f, " ", s)
+		InvertedIndex := f + " - " + s
+                of.WriteString(InvertedIndex)
+                of.WriteString("\n")
 	}
 	 fmt.Print("Time Taken: ")
         fmt.Println(time.Since(t0))
