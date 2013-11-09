@@ -51,7 +51,7 @@ func (wc WC) Reducer(key string, value []string, out chan mr.Pair) {
 
 func main() {
 	wc := WC{}
-	of, err := os.Create("/home/smenedi/workspace/gomapreduce/examples/langdictionary/Output")
+	of, err := os.Create("output")
 	defer of.Close()
 
 	if err != nil {
@@ -61,7 +61,7 @@ func main() {
 	t0 := time.Now()
 
 	// Ouput all key-value pairs
-	out := mr.Run(wc, "/home/smenedi/workspace/gomapreduce/examples/langdictionary/Input")
+	out := mr.Run(wc, "input")
 
 	for p := range out {
 		translatedline := p.First + "\t" + p.Second
