@@ -1,0 +1,60 @@
+LargeLong Size= 142M src/examples/Anagrams/AnagramsInp/LargeLong
+Run 0: 
+TimeTaken = 56.694061109s
+Run 1: 
+TimeTaken = 56.486362238s
+Run 2: 
+TimeTaken = 56.613878123s
+Run 3: 
+TimeTaken = 56.72392901s
+Run 4: 
+TimeTaken = 56.744833648s
+
+Large Size= 71M src/examples/Anagrams/AnagramsInp/Large
+Run 0: 
+TimeTaken = 31.787174555s
+Run 1: 
+TimeTaken = 31.696818827s
+Run 2: 
+TimeTaken = 31.797907081s
+Run 3: 
+TimeTaken = 31.841657264s
+Run 4: 
+TimeTaken = 31.828722969s
+
+MedLong Size= 39M src/examples/Anagrams/AnagramsInp/MedLong
+Run 0: 
+TimeTaken = 18.67786753s
+Run 1: 
+TimeTaken = 18.708823036s
+Run 2: 
+TimeTaken = 18.657118794s
+Run 3: 
+TimeTaken = 18.703631298s
+Run 4: 
+TimeTaken = 18.738666438s
+
+Med Size= 13M src/examples/Anagrams/AnagramsInp/Med
+Run 0: 
+TimeTaken = 6.578201972s
+Run 1: 
+TimeTaken = 6.506527659s
+Run 2: 
+TimeTaken = 6.560039158s
+Run 3: 
+TimeTaken = 6.515504777s
+Run 4: 
+TimeTaken = 6.540070155s
+
+Small Size= 1.5M src/examples/Anagrams/AnagramsInp/Small
+Run 0: 
+TimeTaken = 1.604354183s
+Run 1: 
+TimeTaken = 1.646842868s
+Run 2: 
+TimeTaken = 1.640844071s
+Run 3: 
+TimeTaken = 1.639722239s
+Run 4: 
+TimeTaken = 1.655230083s
+
