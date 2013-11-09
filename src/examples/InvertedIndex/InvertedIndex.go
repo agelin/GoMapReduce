@@ -63,7 +63,7 @@ func main() {
 	for p := range out {
 		f := p.First
 		s := p.Second
-		fmt.Println(f, " ", s)
+		//fmt.Println(f, " ", s)
 		InvertedIndex := f + " - " + s
                 of.WriteString(InvertedIndex)
                 of.WriteString("\n")
