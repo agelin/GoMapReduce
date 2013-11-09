@@ -60,14 +60,18 @@ func main() {
         }
 	 t0 := time.Now()
 	out := mr.Run(wc, "/cise/homes/ttumati/input/")
+	w := bufio.NewWriter(of)
 	for p := range out {
 		f := p.First
 		s := p.Second
 		//fmt.Println(f, " ", s)
+		
 		InvertedIndex := f + " - " + s
-                of.WriteString(InvertedIndex)
-                of.WriteString("\n")
+                //of.WriteString(InvertedIndex)
+                //of.WriteString("\n")
+                fmt.Fprintln(w, InvertedIndex)
 	}
+	w.Flush()
 	 fmt.Print("Time Taken: ")
         fmt.Println(time.Since(t0))
 	
