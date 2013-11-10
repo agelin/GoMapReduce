@@ -1,0 +1,85 @@
+LargeLong Size= 9.1M src/examples/InvertedIndex/InvertedIndexInp/LargeLong
+Run 0: 
+TimeTaken = 2.796425696s
+
+Run 1: 
+TimeTaken = 2.792446575s
+
+Run 2: 
+TimeTaken = 2.885024761s
+
+Run 3: 
+TimeTaken = 2.808762069s
+
+Run 4: 
+TimeTaken = 2.794289565s
+
+
+Large Size= 7.9M src/examples/InvertedIndex/InvertedIndexInp/Large
+Run 0: 
+TimeTaken = 2.510078013s
+
+Run 1: 
+TimeTaken = 2.458442583s
+
+Run 2: 
+TimeTaken = 2.511077017s
+
+Run 3: 
+TimeTaken = 2.528910433s
+
+Run 4: 
+TimeTaken = 2.520795839s
+
+
+MedLong Size= 6.6M src/examples/InvertedIndex/InvertedIndexInp/MedLong
+Run 0: 
+TimeTaken = 2.122182184s
+
+Run 1: 
+TimeTaken = 2.09117683s
+
+Run 2: 
+TimeTaken = 2.103635056s
+
+Run 3: 
+TimeTaken = 2.120308314s
+
+Run 4: 
+TimeTaken = 2.125132755s
+
+
+Med Size= 5.3M src/examples/InvertedIndex/InvertedIndexInp/Med
+Run 0: 
+TimeTaken = 1.581120565s
+
+Run 1: 
+TimeTaken = 1.571680428s
+
+Run 2: 
+TimeTaken = 1.576386469s
+
+Run 3: 
+TimeTaken = 1.579902264s
+
+Run 4: 
+TimeTaken = 1.574831248s
+
+
+Small Size= 4.1M src/examples/InvertedIndex/InvertedIndexInp/Small
+Run 0: 
+TimeTaken = 1.143387304s
+
+Run 1: 
+TimeTaken = 1.131553026s
+
+Run 2: 
+TimeTaken = 1.148722013s
+
+Run 3: 
+TimeTaken = 1.136057707s
+
+Run 4: 
+TimeTaken = 1.150193588s
+
+
