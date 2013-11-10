@@ -52,7 +52,7 @@ func main() {
 
 	t0 := time.Now()
 
-	// Ouput all key-value pairs
+	// Ouput all key-value pair
 	out := mr.Run(wc, "input")
 
 	for p := range out {
