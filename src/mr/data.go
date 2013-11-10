@@ -1,5 +1,7 @@
 package mr
 
+// This file contains communication specific data structures
+
 const (
 	_                byte = iota
 	MapMSG           byte = iota
