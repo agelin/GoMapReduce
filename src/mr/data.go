@@ -1,12 +1,14 @@
 package mr
 
 const (
-	_        byte = iota
-	Map      byte = iota
-	EndOfMap byte = iota
-	Reduce   byte = iota
-	IWData   byte = iota
-	EndLife  byte = iota
+	_             byte = iota
+	Map           byte = iota
+	EndOfMap      byte = iota
+	Reduce        byte = iota
+	IWData        byte = iota
+	EndLife       byte = iota
+	ReduceWorkers byte = iota
+	ReducedData   byte = iota
 )
 
 type MapData struct {

@@ -53,7 +53,7 @@ func RunWorker(mr MapReduce) {
 			}
 
 			// DEBUG
-			fmt.Printf("W : Received message - %d\n", mode)
+			fmt.Printf("W%d : Received message - %d\n", MyRank, mode)
 
 			switch mode {
 			case Map:
@@ -120,7 +120,7 @@ func RunWorker(mr MapReduce) {
 						if !ok {
 							lst = make([]string, 0)
 						}
-						lst = append(lst, v)
+						lst = append(lst, v...)
 						rdatamap[k] = lst
 					}
 				}
