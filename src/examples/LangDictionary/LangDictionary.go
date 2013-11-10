@@ -61,6 +61,6 @@ func main() {
 		of.WriteString("\n")
 	}
 	fmt.Print("Time Taken: ")
-	fmt.Println(time.Since(t0))
+	fmt.Println(time.Since(t0).Seconds()*float64(time.Second/time.Millisecond))
 
 }
