@@ -1,3 +1,5 @@
+import java.io.FileWriter;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
@@ -27,6 +29,11 @@ public class InvertedIndexDriver {
                 job.submit();
                 job.waitForCompletion(true);
                 long endTime = System.currentTimeMillis();
-                System.out.println("======TOTAL TIME ====== " + (endTime - startTime));
+                FileWriter fw=new FileWriter(args[1]+"/ResponseTime");
+                String output = "";
+                //double timeSeconds = (endTime - startTime)/1000.0;
+                output +="======TOTAL TIME ====== " +(endTime - startTime)  + " Milliseconds";
+                fw.write(output);
+                fw.close();
         }
 }
