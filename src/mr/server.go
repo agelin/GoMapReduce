@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net"
@@ -48,7 +49,7 @@ func SplitData(data string, splitConf SplitConf) map[int]string {
 	return m2d
 }
 
-func RunServer(inputdir string) {
+func RunServer(inputdir string, output io.Writer) {
 
 	state := UM
 
@@ -251,7 +252,9 @@ func RunServer(inputdir string) {
 				for _, p := range rd.data {
 					k := p.First
 					v := p.Second
-					fmt.Println(k + "\t" + v)
+					//fmt.Println(k + "\t" + v)
+					toprint := k + "\t" + v
+					output.Write([]byte(toprint))
 				}
 
 				// Send "End life" message to that reducer

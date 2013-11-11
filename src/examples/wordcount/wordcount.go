@@ -8,6 +8,7 @@ import (
 	"strings"
 	"strconv"
 	"time"
+	"flag"
 )
 
 type WC struct{}
@@ -45,22 +46,27 @@ func (wc WC) Reducer(key string, value []string, out chan mr.Pair) {
 	out <- mr.Pair{key, strconv.Itoa(count)} 
 }
 
+
+var (
+	inputdir = flag.String("inputdir", ".", "Input directory")
+	)
+
 func main() {
 	wc := WC{}
-	of,err := os.Create("/cise/homes/kota/Output123")
-        defer of.Close()
-
-        if err!=nil {
-                return
-        }
+//	of,err := os.Create("/cise/homes/kota/Output123")
+//        defer of.Close()
+//
+//        if err!=nil {
+//                return
+//        }
 	 t0 := time.Now()
 	// Ouput all key-value pairs
-	out := mr.Run(wc, "/cise/homes/kota/input/")
-	for p := range out {
-                single := p.First + " - " + p.Second
-                of.WriteString(single)
-                of.WriteString("\n")
-        }
+	mr.Run(wc, *inputdir, os.Stdout)
+//	for p := range out {
+//                single := p.First + " - " + p.Second
+//                of.WriteString(single)
+//                of.WriteString("\n")
+//        }
         fmt.Print("Time Taken: ")
         fmt.Println(time.Since(t0))
 	/*

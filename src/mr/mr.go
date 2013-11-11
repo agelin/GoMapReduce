@@ -1,11 +1,14 @@
 package mr
 
 import (
-	"fmt"
+	"bufio"
+	"flag"
 	"io/ioutil"
-	"os"
+	"log"
+	"bytes"
 	"strconv"
 	"strings"
+	"io"
 )
 
 type Pair struct {
@@ -54,8 +57,97 @@ func FileSplitter(str string, conf SplitConf) []string {
 	return newStr[0 : j+1]
 }
 
+func fanInChannel(m map[string]chan Pair) chan Pair {
+	// Fan in pattern from http://talks.golang.org/2012/concurrency.slide#27
+	ch := make(chan Pair, MapBuff)
+
+	go func(ch chan Pair) {
+		quit := make(chan bool)
+		for _, v := range m {
+			go func(v chan Pair) {
+				for d := range v {
+					ch <- d
+				}
+				quit <- true
+			}(v)
+		}
+		for i := 0; i < len(m); i++ {
+			//fmt.Println(i)
+			<-quit
+		}
+		close(ch)
+	}(ch)
+	return ch
+}
+
+// For command line arguments
+var (
+	rank   = flag.Int("rank", -1, "Rank of this node, 0 is master, others are workers")
+	config = flag.String("config", "", "configuration file with ranks and ip address of all nodes")
+)
+
+// Runs multinode mapreduce and writes output to 
+// mr - mapreduce instance
+// inputdir - directory with input files
+func Run(mr MapReduce, inputdir string, output io.Writer) {
+	// Read config file
+	if *config == "" {
+		log.Fatal("No configuration file specified")
+	}
+	if *rank == -1 {
+		log.Fatal("No rank / Invalid rank specified")
+	}
+
+	fData, err := ioutil.ReadFile(*config)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Initialize NodeMap structure
+	NodesMap = make(map[int]string)
+
+	// Reading the configuration file and populating 
+	// the NodesMap data structure
+	// This part is not bullet proof, 
+	// PLEASE DO NOT GIVE IT ERRONEOUS config files
+	scanner := bufio.NewScanner(bytes.NewReader(fData))
+	scanner.Split(bufio.ScanLines) // This is default behaviour
+	for scanner.Scan() {
+		line := scanner.Text()
+		lsc := bufio.NewScanner(strings.NewReader(line))
+		lsc.Split(bufio.ScanWords)
+		// 2 tokens. first is rank, second is ip:port
+		lsc.Scan()
+		r, err := strconv.Atoi(lsc.Text())
+		if err != nil {
+			log.Fatal(err)
+		}
+		lsc.Scan()
+		ip := lsc.Text()
+		NodesMap[r] = ip
+	}
+
+	MyRank = *rank
+	
+	var ok bool
+	MyIP, ok = NodesMap[MyRank]
+	if !ok {
+		log.Fatal("Could not find my own rank in the configuration file!")
+	}
+	
+	// If master, Run Server
+	if MyRank == 0 {
+		RunServer(inputdir, output)
+	} else {	// Run worker
+		RunWorker(mr)
+	}
+}
+
+// Single Node MR
+
 // Inputs a pointer to a MapReduce object and the input directory
 // with the files
+/*
 func Run(mr MapReduce, inputdir string) chan Pair {
 
 	// make sure the directory exists
@@ -129,25 +221,4 @@ func Run(mr MapReduce, inputdir string) chan Pair {
 	return och
 }
 
-func fanInChannel(m map[string]chan Pair) chan Pair {
-	// Fan in pattern from http://talks.golang.org/2012/concurrency.slide#27
-	ch := make(chan Pair, MapBuff)
-
-	go func(ch chan Pair) {
-		quit := make(chan bool)
-		for _, v := range m {
-			go func(v chan Pair) {
-				for d := range v {
-					ch <- d
-				}
-				quit <- true
-			}(v)
-		}
-		for i := 0; i < len(m); i++ {
-			//fmt.Println(i)
-			<-quit
-		}
-		close(ch)
-	}(ch)
-	return ch
-}
+*/
