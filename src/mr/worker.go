@@ -3,7 +3,6 @@ package mr
 import (
 	"bufio"
 	"encoding/json"
-	"fmt"
 	"hash"
 	"hash/adler32"
 	"log"
@@ -87,7 +86,7 @@ func RunWorker(mr MapReduce) {
 			}
 
 			// DEBUG
-			fmt.Printf("W%d : Received message - %d\n", MyRank, mode)
+			log.Printf("W%d : Received message - %d\n", MyRank, mode)
 
 			switch mode {
 			case MapMSG:
@@ -139,7 +138,7 @@ func RunWorker(mr MapReduce) {
 					mapDoneChan <- true
 				}()
 
-				fmt.Println(md.m)
+				log.Println(md.m)
 
 			case EndOfMapMSG:
 				// Wait for completion of all Map Tasks
@@ -188,7 +187,7 @@ func RunWorker(mr MapReduce) {
 				if err := dec.Decode(&iwr); err != nil {
 					log.Fatal(err)
 				}
-				fmt.Println(iwr.ranks)
+				log.Println(iwr.ranks)
 				// Initiate connection with all IWs, collect data & start reducers.
 
 				var rdatamap map[string][]string // accumulated data for reducers
