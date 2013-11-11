@@ -20,6 +20,8 @@ const (
 // Map of reducer num to reducer data.
 // Needs to be initialized and protected from concurrent access by mappers.
 var allRData map[int]map[string][]string
+
+// Mutex to protect allRData
 var mutex sync.Mutex
 
 // Channel on which "quit" message will arrive from launched sets of mappers
@@ -122,6 +124,7 @@ func RunWorker(mr MapReduce) {
 						redRank := int(h.Sum32())%(len(NodesMap)-1) + 1
 						h.Reset()
 						// Put calculated rank and data into allRData
+						mutex.Lock()
 						m, ok := allRData[redRank]
 						if !ok {
 							m = make(map[string][]string)
@@ -133,6 +136,7 @@ func RunWorker(mr MapReduce) {
 						vallist = append(vallist, val)
 						m[key] = vallist
 						allRData[redRank] = m
+						mutex.Unlock()
 					}
 					// we can detect when they're done
 					mapDoneChan <- true
