@@ -3,7 +3,6 @@ package mr
 import (
 	"bufio"
 	"encoding/json"
-	"fmt"
 	"hash"
 	"hash/adler32"
 	"log"
@@ -54,6 +53,7 @@ func RunWorker(mr MapReduce) {
 
 	// Listen to incoming requests
 	l, err := net.Listen("tcp", MyIP)
+	log.Println("Listening to tcp connections on " + MyIP)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -68,6 +68,7 @@ func RunWorker(mr MapReduce) {
 			// If the master is up, it will initiate a TCP connection
 			// and close it immediately.
 			c, err := l.Accept()
+			log.Println("Receieved connection from Master...Initializing worker")
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -89,7 +90,7 @@ func RunWorker(mr MapReduce) {
 			}
 
 			// DEBUG
-			fmt.Printf("W%d : Received message - %d\n", MyRank, mode)
+			log.Printf("W%d : Received message - %d\n", MyRank, mode)
 
 			switch mode {
 			case MapMSG:
@@ -143,8 +144,9 @@ func RunWorker(mr MapReduce) {
 					mapDoneChan <- true
 				}()
 
-				fmt.Println(md.m)
-
+				//log.Println("MapData :" +  md.m)
+				log.Println("MapData")
+				
 			case EndOfMapMSG:
 				// Wait for completion of all Map Tasks
 				for i := 0; i < numMapData; i++ {
@@ -192,8 +194,11 @@ func RunWorker(mr MapReduce) {
 				if err := dec.Decode(&iwr); err != nil {
 					log.Fatal(err)
 				}
-				fmt.Println(iwr.ranks)
+				//log.Println("Reducer : Mapper ranks to get data from : " + iwr.ranks)
+				log.Println("Reducer : Mapper ranks to get data")
+				
 				// Initiate connection with all IWs, collect data & start reducers.
+				
 
 				var rdatamap map[string][]string // accumulated data for reducers
 				for rank := range iwr.ranks {

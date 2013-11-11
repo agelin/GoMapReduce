@@ -2,13 +2,15 @@ package mr
 
 import (
 	"bufio"
+	"bytes"
 	"flag"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
-	"bytes"
+	"os"
 	"strconv"
 	"strings"
-	"io"
 )
 
 type Pair struct {
@@ -86,10 +88,13 @@ var (
 	config = flag.String("config", "", "configuration file with ranks and ip address of all nodes")
 )
 
-// Runs multinode mapreduce and writes output to 
+// Runs multinode mapreduce and writes output to
 // mr - mapreduce instance
 // inputdir - directory with input files
 func Run(mr MapReduce, inputdir string, output io.Writer) {
+
+	flag.Parse()
+
 	// Read config file
 	if *config == "" {
 		log.Fatal("No configuration file specified")
@@ -97,6 +102,17 @@ func Run(mr MapReduce, inputdir string, output io.Writer) {
 	if *rank == -1 {
 		log.Fatal("No rank / Invalid rank specified")
 	}
+
+	MyRank = *rank
+
+	// Setting standard logger
+	logFName := fmt.Sprintf("log%d", MyRank)
+	lg, err := os.OpenFile(logFName, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0660)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.SetOutput(lg)
 
 	fData, err := ioutil.ReadFile(*config)
 	if err != nil {
@@ -106,9 +122,9 @@ func Run(mr MapReduce, inputdir string, output io.Writer) {
 	// Initialize NodeMap structure
 	NodesMap = make(map[int]string)
 
-	// Reading the configuration file and populating 
+	// Reading the configuration file and populating
 	// the NodesMap data structure
-	// This part is not bullet proof, 
+	// This part is not bullet proof,
 	// PLEASE DO NOT GIVE IT ERRONEOUS config files
 	scanner := bufio.NewScanner(bytes.NewReader(fData))
 	scanner.Split(bufio.ScanLines) // This is default behaviour
@@ -127,18 +143,16 @@ func Run(mr MapReduce, inputdir string, output io.Writer) {
 		NodesMap[r] = ip
 	}
 
-	MyRank = *rank
-	
 	var ok bool
 	MyIP, ok = NodesMap[MyRank]
 	if !ok {
 		log.Fatal("Could not find my own rank in the configuration file!")
 	}
-	
+
 	// If master, Run Server
 	if MyRank == 0 {
 		RunServer(inputdir, output)
-	} else {	// Run worker
+	} else { // Run worker
 		RunWorker(mr)
 	}
 }

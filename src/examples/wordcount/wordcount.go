@@ -52,6 +52,9 @@ var (
 	)
 
 func main() {
+	
+	flag.Parse()
+
 	wc := WC{}
 //	of,err := os.Create("/cise/homes/kota/Output123")
 //        defer of.Close()

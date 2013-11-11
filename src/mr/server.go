@@ -3,7 +3,6 @@ package mr
 import (
 	"bufio"
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -23,51 +22,23 @@ var workingMappers map[int]bool  // Set of mappers assigned map data to
 var workingReducers map[int]bool // Set of reducers assigned reduce data to
 var inReducer map[int][]int      // List of mappers that need to send data to a reducer
 
-func SplitData(data string, splitConf SplitConf) map[int]string {
-
-	fd := FileSplitter(data, splitConf) // Call to Split file in order keep in sync with single-node implementation
-
-	numw := len(NodesMap) - 1
-	ld := len(fd)         // lines of data
-	spm := int(ld / numw) // Splits per map
-
-	if spm == 0 && ld > 0 {
-		spm = 1
-	}
-
-	m2d := make(map[int]string)
-
-	m2d[0] = "Wrong map call; You called Server Rank"
-
-	for i, j := 0, 0; i < len(fd); i, j = i+spm, (j+1)%numw {
-		if i+spm < len(fd) {
-			m2d[j+1] = strings.Join(fd[i:i+spm], "\n")
-		} else {
-			m2d[j+1] = strings.Join(fd[i:], "\n")
-		}
-	}
-	return m2d
-}
-
 func RunServer(inputdir string, output io.Writer) {
 
+	// Initialize data structures
+	workingReducers = make(map[int]bool)	// Initialize working reducers
+	workingMappers = make(map[int]bool)		// Initialize working mappers
+	inReducer = make(map[int][]int)			// Initialize set of mappers from which a reducer should get data
+	
 	state := UM
-
-	// Setting standard logger
-
-	lg, err := os.OpenFile("logfile", os.O_CREATE|os.O_RDWR|os.O_APPEND, 0660)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.SetOutput(lg)
 
 	if MyRank != 0 {
 		log.Fatal("Master should be rank 0")
 	}
 
 	// Send init message to all workers in NodeMap
-	for k, v := range NodesMap {
+	for k := 1; k < len(NodesMap); k++ {
+		v := NodesMap[k]
+		//for k, v := range NodesMap {
 		log.Printf("Connecting to %d at address %s\n", k, v)
 		c, err := net.Dial("tcp", v)
 		if err != nil {
@@ -85,7 +56,7 @@ func RunServer(inputdir string, output io.Writer) {
 	}
 
 	// Send Map Data to every Mapper
-	// Split Data & Send to as many mappers as data and not all 
+	// Split Data & Send to as many mappers as data and not all
 	// Assign set of working mappers to "workingMappers"
 
 	for _, f := range files {
@@ -94,8 +65,7 @@ func RunServer(inputdir string, output io.Writer) {
 			fullPath := inputdir + "/" + f.Name()
 			data, err := ioutil.ReadFile(fullPath)
 			if err != nil {
-				fmt.Fprintln(os.Stderr, "could not read file, err:", err)
-				os.Exit(-1)
+				log.Fatal("Could not read file, err:", err)
 			}
 			// Call Splitter for each file. Split each file across all available Mapppers
 			splitConf := SplitConf{"\n", 200} // Configure the Splitter i.e., seperator and count
@@ -112,6 +82,7 @@ func RunServer(inputdir string, output io.Writer) {
 				}
 				// Send "Map" message to every worker
 				iwcb := bufio.NewWriter(iwc)
+				
 				if err = iwcb.WriteByte(MapMSG); err != nil {
 					log.Fatal(err)
 				}
@@ -205,8 +176,7 @@ func RunServer(inputdir string, output io.Writer) {
 				// When last mapper sends data, ask workers to do reduce
 				if len(workingMappers) == 0 {
 
-					// Initialize working reducers
-					workingReducers = make(map[int]bool)
+				
 					// Send Reducers info about which mappers to get data from
 					// (k is the rank of the reducer while v is the set of workers to get data from)
 					for k, v := range inReducer {
@@ -248,7 +218,7 @@ func RunServer(inputdir string, output io.Writer) {
 				}
 
 				// Print final reduced data - different thread ? to a file ?
-				
+
 				for _, p := range rd.data {
 					k := p.First
 					v := p.Second
@@ -284,4 +254,25 @@ func RunServer(inputdir string, output io.Writer) {
 			os.Exit(0)
 		}
 	}
+}
+
+// Divides data and assigns them to mappers. Information returned in a map[int]string
+func SplitData(data string, splitConf SplitConf) map[int]string {
+
+	fd := FileSplitter(data, splitConf) // Call to Split file in order keep in sync with single-node implementation
+	numw := len(NodesMap) - 1
+	ld := len(fd)         // lines of data
+	spm := int(ld / numw) // Splits per map
+	if spm == 0 && ld > 0 {
+		spm = 1
+	}
+	m2d := make(map[int]string)
+	for i, j := 0, 0; i < len(fd); i, j = i+spm, (j+1)%numw {
+		if i+spm < len(fd) {
+			m2d[j+1] = strings.Join(fd[i:i+spm], "\n")
+		} else {
+			m2d[j+1] = strings.Join(fd[i:], "\n")
+		}
+	}
+	return m2d
 }

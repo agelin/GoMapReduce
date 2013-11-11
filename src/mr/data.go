@@ -3,14 +3,14 @@ package mr
 // This file contains communication specific data structures
 
 const (
-	_                byte = iota
-	MapMSG           byte = iota
-	EndOfMapMSG      byte = iota
-	ReduceMSG        byte = iota
-	IWDataMSG        byte = iota
-	EndLifeMSG       byte = iota
-	ReduceWorkersMSG byte = iota
-	ReducedDataMSG   byte = iota
+	_                byte = 0xA1
+	MapMSG           byte = 0xA2
+	EndOfMapMSG      byte = 0xA3
+	ReduceMSG        byte = 0xA4
+	IWDataMSG        byte = 0xA5
+	EndLifeMSG       byte = 0xA6
+	ReduceWorkersMSG byte = 0xA7
+	ReducedDataMSG   byte = 0xA8
 )
 
 // Sent master -> mappers
