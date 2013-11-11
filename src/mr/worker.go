@@ -146,7 +146,7 @@ func RunWorker(mr MapReduce) {
 
 				//log.Println("MapData :" +  md.m)
 				log.Println("MapData")
-				
+
 			case EndOfMapMSG:
 				// Wait for completion of all Map Tasks
 				for i := 0; i < numMapData; i++ {
@@ -196,9 +196,8 @@ func RunWorker(mr MapReduce) {
 				}
 				//log.Println("Reducer : Mapper ranks to get data from : " + iwr.ranks)
 				log.Println("Reducer : Mapper ranks to get data")
-				
+
 				// Initiate connection with all IWs, collect data & start reducers.
-				
 
 				var rdatamap map[string][]string // accumulated data for reducers
 				for rank := range iwr.ranks {
