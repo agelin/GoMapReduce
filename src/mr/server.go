@@ -84,8 +84,8 @@ func RunServer(inputdir string) {
 	}
 
 	// Send Map Data to every Mapper
-	// TODO Split Data & Send to as many mappers as data and not all -Done
-	// TODO Assign set of working mappers to "workingMappers"
+	// Split Data & Send to as many mappers as data and not all 
+	// Assign set of working mappers to "workingMappers"
 
 	for _, f := range files {
 		if !f.IsDir() {
@@ -221,7 +221,7 @@ func RunServer(inputdir string) {
 						if err = rcb.WriteByte(ReduceMSG); err != nil {
 							log.Fatal(err)
 						}
-						// Send ranks of mappers to get data from
+						// Send ranks of mappers to get data from to reducers
 						var iwr IWRanks
 						iwr.ranks = v
 						enc := json.NewEncoder(rc)
@@ -247,7 +247,10 @@ func RunServer(inputdir string) {
 				}
 
 				// Print final reduced data - different thread ? to a file ?
-				for k, v := range rd.m {
+				
+				for _, p := range rd.data {
+					k := p.First
+					v := p.Second
 					fmt.Println(k + "\t" + v)
 				}
 
