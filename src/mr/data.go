@@ -31,8 +31,8 @@ type ReduceData struct {
 
 // Sent reducers -> master
 type ReducedData struct {
-	reducer int               // Rank of reducer
-	m       map[string]string // reduced data
+	reducer int    // Rank of reducer
+	data    []Pair // reduced data
 }
 
 // Sent master -> reducers

@@ -139,7 +139,7 @@ func RunServer() {
 						if err = rcb.WriteByte(ReduceMSG); err != nil {
 							log.Fatal(err)
 						}
-						// Send ranks of mappers to get data from
+						// Send ranks of mappers to get data from to reducers
 						var iwr IWRanks
 						iwr.ranks = v
 						enc := json.NewEncoder(rc)
@@ -165,7 +165,10 @@ func RunServer() {
 				}
 
 				// Print final reduced data - different thread ? to a file ?
-				for k, v := range rd.m {
+				
+				for _, p := range rd.data {
+					k := p.First
+					v := p.Second
 					fmt.Println(k + "\t" + v)
 				}
 
