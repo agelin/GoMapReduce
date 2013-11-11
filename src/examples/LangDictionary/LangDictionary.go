@@ -11,13 +11,7 @@ import (
 
 type WC struct{}
 
-// The input key, value will be filename, text
-// The output would be word, count
-func (wc WC) Mapper(key, value string, out chan mr.Pair) {
-	//strr := strings.NewReader(value)
-	//s := bufio.NewScanner(value)
-	//s.Split(bufio.ScanWords)
-	
+func (wc WC) Mapper(key, value string, out chan mr.Pair) {	
 	strr := strings.NewReader(value)
 	s := bufio.NewScanner(strr)
 	s.Split(bufio.ScanLines)
@@ -40,8 +34,6 @@ func (wc WC) Mapper(key, value string, out chan mr.Pair) {
 
 }
 
-// The reducer receives a word, <list of counts>
-// It adds up all the counts and outputs a word, combined_count
 func (wc WC) Reducer(key string, value []string, out chan mr.Pair) {
 	trans := strings.Join(value, "|")
 
@@ -51,7 +43,7 @@ func (wc WC) Reducer(key string, value []string, out chan mr.Pair) {
 
 func main() {
 	wc := WC{}
-	of, err := os.Create("/home/smenedi/workspace/gomapreduce/examples/langdictionary/Output")
+	of, err := os.Create("output")
 	defer of.Close()
 
 	if err != nil {
@@ -60,8 +52,8 @@ func main() {
 
 	t0 := time.Now()
 
-	// Ouput all key-value pairs
-	out := mr.Run(wc, "/home/smenedi/workspace/gomapreduce/examples/langdictionary/Input")
+	// Ouput all key-value pair
+	out := mr.Run(wc, "input")
 
 	for p := range out {
 		translatedline := p.First + "\t" + p.Second
@@ -69,6 +61,6 @@ func main() {
 		of.WriteString("\n")
 	}
 	fmt.Print("Time Taken: ")
-	fmt.Println(time.Since(t0))
+	fmt.Println(time.Since(t0).Seconds()*float64(time.Second/time.Millisecond))
 
 }
