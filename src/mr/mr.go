@@ -30,7 +30,7 @@ type MapReduce interface {
 
 
 
-func Splitter(str string, conf SplitConf) []string {
+func FileSplitter(str string, conf SplitConf) []string {
 	sep := conf.sep
 	counter:= 0
 	start:=0
@@ -82,7 +82,7 @@ func Run(mr MapReduce, inputdir string) chan Pair{
 				}
 				
 				splitConf := SplitConf{"\n",200}  // Configure the Splitter i.e., seperator and count
-				mapperData := Splitter(string(data),splitConf)
+				mapperData := FileSplitter(string(data),splitConf)
 				
 				for i,j:= range mapperData{
 				
