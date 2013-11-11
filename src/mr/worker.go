@@ -84,10 +84,17 @@ func RunWorker(mr MapReduce) {
 			}
 
 			b := bufio.NewReader(c)
-			var mode byte
-			if mode, err = b.ReadByte(); err != nil {
+			var mode string
+			//			if mode, err = b.ReadByte(); err != nil {
+			//				log.Fatal(err)
+			//			}
+
+			var msg ActionMessage
+			mdec := json.NewDecoder(c)
+			if err := mdec.Decode(&msg); err != nil {
 				log.Fatal(err)
 			}
+			mode = msg.Msg
 
 			// DEBUG
 			log.Printf("W%d : Received message - %d\n", MyRank, mode)
@@ -105,7 +112,7 @@ func RunWorker(mr MapReduce) {
 
 				// List of mapper channels
 				mchans := make(map[string]chan Pair)
-				for k, v := range md.m {
+				for k, v := range md.M {
 					ch := make(chan Pair)
 					mchans[k] = ch
 
@@ -157,11 +164,11 @@ func RunWorker(mr MapReduce) {
 
 				// Collect data
 				var m2r MapperToReducersInfo
-				m2r.mapper = MyRank
-				m2r.reducers = make([]int, len(allRData))
+				m2r.Mapper = MyRank
+				m2r.Reducers = make([]int, len(allRData))
 				i := 0
 				for k, _ := range allRData {
-					m2r.reducers[i] = k
+					m2r.Reducers[i] = k
 					i = i + 1
 				}
 
@@ -173,8 +180,15 @@ func RunWorker(mr MapReduce) {
 				}
 
 				// Send reduce workers message to master
-				mcb := bufio.NewWriter(mc)
-				if err = mcb.WriteByte(ReduceWorkersMSG); err != nil {
+				//				mcb := bufio.NewWriter(mc)
+				//				if err = mcb.WriteByte(ReduceWorkersMSG); err != nil {
+				//					log.Fatal(err)
+				//				}
+
+				var msg ActionMessage
+				msg.Msg = ReduceWorkersMSG
+				menc := json.NewEncoder(mc)
+				if err = menc.Encode(&msg); err != nil {
 					log.Fatal(err)
 				}
 
@@ -200,7 +214,7 @@ func RunWorker(mr MapReduce) {
 				// Initiate connection with all IWs, collect data & start reducers.
 
 				var rdatamap map[string][]string // accumulated data for reducers
-				for rank := range iwr.ranks {
+				for rank := range iwr.Ranks {
 
 					var redd ReduceData // data from each IW
 					if rank != MyRank { // If i have data, just copy it over
@@ -210,13 +224,20 @@ func RunWorker(mr MapReduce) {
 							log.Fatal(err)
 						}
 						// Send request data to IW
-						iwcb := bufio.NewWriter(iwc)
-						if err = iwcb.WriteByte(IWDataMSG); err != nil {
+						//						iwcb := bufio.NewWriter(iwc)
+						//						if err = iwcb.WriteByte(IWDataMSG); err != nil {
+						//							log.Fatal(err)
+						//						}
+						var msg ActionMessage
+						msg.Msg = IWDataMSG
+						menc := json.NewEncoder(iwc)
+						if err = menc.Encode(&msg); err != nil {
 							log.Fatal(err)
 						}
+
 						// Send rank
 						var rd RequestData
-						rd.rank = MyRank
+						rd.Rank = MyRank
 						enc := json.NewEncoder(iwc)
 						if err = enc.Encode(&rd); err != nil {
 							log.Fatal(err)
@@ -228,11 +249,11 @@ func RunWorker(mr MapReduce) {
 						}
 						iwc.Close()
 					} else {
-						redd.m = allRData[MyRank]
+						redd.M = allRData[MyRank]
 					}
 
 					// accumulate data
-					for k, v := range redd.m {
+					for k, v := range redd.M {
 						lst, ok := rdatamap[k]
 						if !ok {
 							lst = make([]string, 0)
@@ -256,10 +277,10 @@ func RunWorker(mr MapReduce) {
 				go func() {
 					ich := fanInChannel(rchans)
 					var rd ReducedData
-					rd.reducer = MyRank
-					rd.data = make([]Pair, 0)
+					rd.Reducer = MyRank
+					rd.Data = make([]Pair, 0)
 					for p := range ich {
-						rd.data = append(rd.data, p)
+						rd.Data = append(rd.Data, p)
 					}
 
 					// Send data to master
@@ -269,10 +290,18 @@ func RunWorker(mr MapReduce) {
 						log.Fatal(err)
 					}
 					// Send request data to IW
-					mcb := bufio.NewWriter(mc)
-					if err = mcb.WriteByte(ReducedDataMSG); err != nil {
+					//					mcb := bufio.NewWriter(mc)
+					//					if err = mcb.WriteByte(ReducedDataMSG); err != nil {
+					//						log.Fatal(err)
+					//					}
+
+					var msg ActionMessage
+					msg.Msg = ReducedDataMSG
+					menc := json.NewEncoder(mc)
+					if err = menc.Encode(&msg); err != nil {
 						log.Fatal(err)
 					}
+
 					// Send reduced data
 
 					enc := json.NewEncoder(mc)
@@ -289,11 +318,11 @@ func RunWorker(mr MapReduce) {
 				if err := dec.Decode(&rd); err != nil {
 					log.Fatal(err)
 				}
-				log.Printf("Sending data to %d\n", rd.rank)
+				log.Printf("Sending data to %d\n", rd.Rank)
 				// Send data to IW
-				reduceData := allRData[rd.rank]
+				reduceData := allRData[rd.Rank]
 				var redd ReduceData
-				redd.m = reduceData
+				redd.M = reduceData
 				enc := json.NewEncoder(c)
 				if err := enc.Encode(&redd); err != nil {
 					log.Fatal(err)

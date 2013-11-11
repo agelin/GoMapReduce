@@ -25,10 +25,10 @@ var inReducer map[int][]int      // List of mappers that need to send data to a 
 func RunServer(inputdir string, output io.Writer) {
 
 	// Initialize data structures
-	workingReducers = make(map[int]bool)	// Initialize working reducers
-	workingMappers = make(map[int]bool)		// Initialize working mappers
-	inReducer = make(map[int][]int)			// Initialize set of mappers from which a reducer should get data
-	
+	workingReducers = make(map[int]bool) // Initialize working reducers
+	workingMappers = make(map[int]bool)  // Initialize working mappers
+	inReducer = make(map[int][]int)      // Initialize set of mappers from which a reducer should get data
+
 	state := UM
 
 	if MyRank != 0 {
@@ -81,9 +81,12 @@ func RunServer(inputdir string, output io.Writer) {
 					log.Fatal(err)
 				}
 				// Send "Map" message to every worker
-				iwcb := bufio.NewWriter(iwc)
-				
-				if err = iwcb.WriteByte(MapMSG); err != nil {
+				//iwcb := bufio.NewWriter(iwc)
+
+				var msg ActionMessage
+				msg.Msg = MapMSG
+				menc := json.NewEncoder(iwc)
+				if err = menc.Encode(&msg); err != nil {
 					log.Fatal(err)
 				}
 
@@ -93,10 +96,10 @@ func RunServer(inputdir string, output io.Writer) {
 				// Split data and put into "md"
 
 				var md MapData
-				md.m = make(map[string]string)
+				md.M = make(map[string]string)
 				key := f.Name() + "$" + strconv.Itoa(mr) // $ can be latter used to split
 
-				md.m[key] = v
+				md.M[key] = v
 
 				enc := json.NewEncoder(iwc)
 				if err = enc.Encode(&md); err != nil {
@@ -117,8 +120,14 @@ func RunServer(inputdir string, output io.Writer) {
 			}
 
 			// Send "End of Map" Message
-			iwcb := bufio.NewWriter(iwc)
-			if err = iwcb.WriteByte(EndOfMapMSG); err != nil {
+			//			iwcb := bufio.NewWriter(iwc)
+			//			if err = iwcb.WriteByte(EndOfMapMSG); err != nil {
+			//				log.Fatal(err)
+			//			}
+			var msg ActionMessage
+			msg.Msg = EndOfMapMSG
+			menc := json.NewEncoder(iwc)
+			if err = menc.Encode(&msg); err != nil {
 				log.Fatal(err)
 			}
 		}
@@ -141,11 +150,16 @@ func RunServer(inputdir string, output io.Writer) {
 			}
 
 			b := bufio.NewReader(c)
-			var mode byte
-			if mode, err = b.ReadByte(); err != nil {
+			var mode string
+			//			if mode, err = b.ReadByte(); err != nil {
+			//				log.Fatal(err)
+			//			}
+			var msg ActionMessage
+			mdec := json.NewDecoder(c)
+			if err := mdec.Decode(&msg); err != nil {
 				log.Fatal(err)
 			}
-
+			mode = msg.Msg
 			log.Printf("M : Received message - %d\n", mode)
 
 			switch mode {
@@ -162,21 +176,20 @@ func RunServer(inputdir string, output io.Writer) {
 					log.Fatal(err)
 				}
 				// combine into convenient Data structure
-				for r := range m2r.reducers {
+				for r := range m2r.Reducers {
 					lst, ok := inReducer[r]
 					if !ok {
 						lst = make([]int, 0)
 					}
-					lst = append(lst, m2r.mapper)
+					lst = append(lst, m2r.Mapper)
 					inReducer[r] = lst
 				}
 
-				delete(workingMappers, m2r.mapper)
+				delete(workingMappers, m2r.Mapper)
 
 				// When last mapper sends data, ask workers to do reduce
 				if len(workingMappers) == 0 {
 
-				
 					// Send Reducers info about which mappers to get data from
 					// (k is the rank of the reducer while v is the set of workers to get data from)
 					for k, v := range inReducer {
@@ -188,13 +201,21 @@ func RunServer(inputdir string, output io.Writer) {
 							log.Fatal(err)
 						}
 						// Send "Reduce" message to reducers
-						rcb := bufio.NewWriter(rc)
-						if err = rcb.WriteByte(ReduceMSG); err != nil {
+						//						rcb := bufio.NewWriter(rc)
+						//						if err = rcb.WriteByte(ReduceMSG); err != nil {
+						//							log.Fatal(err)
+						//						}
+
+						var msg ActionMessage
+						msg.Msg = ReduceMSG
+						menc := json.NewEncoder(rc)
+						if err = menc.Encode(&msg); err != nil {
 							log.Fatal(err)
 						}
+
 						// Send ranks of mappers to get data from to reducers
 						var iwr IWRanks
-						iwr.ranks = v
+						iwr.Ranks = v
 						enc := json.NewEncoder(rc)
 						if err = enc.Encode(&iwr); err != nil {
 							log.Fatal(err)
@@ -219,7 +240,7 @@ func RunServer(inputdir string, output io.Writer) {
 
 				// Print final reduced data - different thread ? to a file ?
 
-				for _, p := range rd.data {
+				for _, p := range rd.Data {
 					k := p.First
 					v := p.Second
 					//fmt.Println(k + "\t" + v)
@@ -228,27 +249,36 @@ func RunServer(inputdir string, output io.Writer) {
 				}
 
 				// Send "End life" message to that reducer
-				ip := NodesMap[rd.reducer]
+				ip := NodesMap[rd.Reducer]
 				var rc net.Conn
 				if rc, err = net.Dial("tcp", ip); err != nil {
 					log.Fatal(err)
 				}
-				rcb := bufio.NewWriter(rc)
-				if err = rcb.WriteByte(EndLifeMSG); err != nil {
+				//				rcb := bufio.NewWriter(rc)
+				//				if err = rcb.WriteByte(EndLifeMSG); err != nil {
+				//					log.Fatal(err)
+				//				}
+				var msg ActionMessage
+				msg.Msg = EndLifeMSG
+				menc := json.NewEncoder(rc)
+				if err = menc.Encode(&msg); err != nil {
 					log.Fatal(err)
 				}
 				rc.Close()
 				// When last mapper sends data
 				// switch state to SM
 
-				delete(workingReducers, rd.reducer)
+				delete(workingReducers, rd.Reducer)
 
 				if len(workingReducers) == 0 {
 					state = SM
 				}
-
+			default:
+				log.Println("Master received unexpected message...")
 			}
 			c.Close()
+			
+			
 		case SM:
 			// TODO Maybe do the printing from here?
 			os.Exit(0)

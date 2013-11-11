@@ -20,8 +20,8 @@ type Pair struct {
 
 // Spitter Configuration
 type SplitConf struct {
-	sep   string // Seperator
-	count int    // Number of Seperator's after which a split will happen
+	Sep   string // Seperator
+	Count int    // Number of Seperator's after which a split will happen
 }
 
 const (
@@ -34,11 +34,11 @@ type MapReduce interface {
 }
 
 func FileSplitter(str string, conf SplitConf) []string {
-	sep := conf.sep
+	sep := conf.Sep
 	counter := 0
 	start := 0
 	j := 0
-	n := strings.Count(str, sep)/conf.count + 1
+	n := strings.Count(str, sep)/conf.Count + 1
 	newStr := make([]string, n)
 
 	for i := 0; i < len(str); i++ {
@@ -46,7 +46,7 @@ func FileSplitter(str string, conf SplitConf) []string {
 			counter++
 		}
 
-		if counter == conf.count {
+		if counter == conf.Count {
 			newStr[j] = str[start:i]
 			start = i + len(sep)
 			j++
