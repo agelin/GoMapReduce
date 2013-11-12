@@ -6,29 +6,20 @@ import (
 	"io/ioutil"
 	"log"
 	"net"
-	"os"
 	"strconv"
 	"strings"
-)
-
-const (
-	IM = iota // Initialized master
-	UM = iota // Unintialized master
-	SM = iota // Stopped master
 )
 
 var workingMappers map[int]bool  // Set of mappers assigned map data to
 var workingReducers map[int]bool // Set of reducers assigned reduce data to
 var inReducer map[int][]int      // List of mappers that need to send data to a reducer
 
-func RunServer(inputdir string, output io.Writer) {
+func RunServer(inputdir string, output io.Writer, quitServer chan bool) {
 
 	// Initialize data structures
 	workingReducers = make(map[int]bool) // Initialize working reducers
 	workingMappers = make(map[int]bool)  // Initialize working mappers
 	inReducer = make(map[int][]int)      // Initialize set of mappers from which a reducer should get data
-
-	state := UM
 
 	if MyRank != 0 {
 		log.Fatal("Master should be rank 0")
@@ -146,8 +137,12 @@ func RunServer(inputdir string, output io.Writer) {
 		}
 		log.Printf("M : Sending \"EndOfMapMSG\" to worker %d\n", mr)
 	}
+
+	/**************************************************************/
+	/* 				Done sending all map data to workers          */
+	/**************************************************************/
+
 	// Switch state to listen on messages from workers
-	state = IM
 
 	l, err := net.Listen("tcp", MyIP)
 	if err != nil {
@@ -156,15 +151,14 @@ func RunServer(inputdir string, output io.Writer) {
 	log.Printf("M : Listening at IP : %s\n", MyIP)
 
 	for {
-		switch state {
-		case IM:
-			log.Printf("M : IM State\n")
 
-			var c net.Conn
-			var err error
-			if c, err = l.Accept(); err != nil {
-				log.Fatal(err)
-			}
+		var c net.Conn
+		var err error
+		if c, err = l.Accept(); err != nil {
+			log.Fatal(err)
+		}
+
+		go func(c net.Conn) {
 
 			var mode string
 			var msg ActionMessage
@@ -314,7 +308,11 @@ func RunServer(inputdir string, output io.Writer) {
 
 				if len(workingReducers) == 0 {
 					log.Printf("M : Received reduced data from all reducers, switching state to SM\n")
-					state = SM
+					/**************************************************************/
+					/*					End life of server					      */
+					/**************************************************************/
+					log.Printf("M : Stopping Master\n")
+					quitServer <- true
 				}
 			default:
 				log.Fatal("Master received unexpected message...")
@@ -322,11 +320,8 @@ func RunServer(inputdir string, output io.Writer) {
 			if err := c.Close(); err != nil {
 				log.Fatal(err)
 			}
+		}(c)
 
-		case SM:
-			log.Printf("M : Now in SM state")
-			os.Exit(0)
-		}
 	}
 }
 

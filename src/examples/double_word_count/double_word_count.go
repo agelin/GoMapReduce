@@ -2,7 +2,9 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
+	"log"
 	"mr"
 	"os"
 	"strconv"
@@ -37,8 +39,6 @@ func (wc WC) Mapper(key, value string, out chan mr.Pair) {
 		} else {
 			break
 		}
-		//out <- mr.Pair{word, "1"}
-		//fmt.Println(word)
 	}
 	if err := s.Err(); err != nil {
 		fmt.Fprintln(os.Stderr, "reading file :", err)
@@ -51,7 +51,6 @@ func (wc WC) Mapper(key, value string, out chan mr.Pair) {
 func (wc WC) Reducer(key string, value []string, out chan mr.Pair) {
 	count := 0
 	for _, v := range value {
-		//fmt.Println("k: ", key, "v:", v)
 		c, err := strconv.Atoi(v)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "error converting \"", v, "\" to integer, err:", err)
@@ -62,31 +61,21 @@ func (wc WC) Reducer(key string, value []string, out chan mr.Pair) {
 	out <- mr.Pair{key, strconv.Itoa(count)}
 }
 
+var (
+	inputdir = flag.String("inputdir", ".", "Input directory")
+	output   = flag.String("output", "doublewcoutput", "Output file")
+)
+
 func main() {
 	wc := WC{}
-	of,err := os.Create("/cise/homes/kota/Output12")
-        defer of.Close()
 
-        if err!=nil {
-                return
-        }
-	 t0 := time.Now()
-	// Ouput all key-value pairs
-	out := mr.Run(wc, "/cise/homes/kota/input/")
-	for p := range out {
-                single := p.First + " - " + p.Second
-                of.WriteString(single)
-                of.WriteString("\n")
-        }
-        fmt.Print("Time Taken: ")
-        fmt.Println(time.Since(t0))
-	/*
-	for p := range out {
-		f := p.First
-		s := p.Second
-		fmt.Println(f, " ", s)
-		
+	o, err := os.Create(*output)
+	if err != nil {
+		log.Fatal("Could not create output file, err: ", err)
 	}
-	*/
 
+	t0 := time.Now()
+	mr.Run(wc, *inputdir, o)
+	d := time.Since(t0)
+	fmt.Println("GoMapReduce double word count took " + d.String())
 }

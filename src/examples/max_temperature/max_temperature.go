@@ -2,7 +2,9 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
+	"log"
 	"mr"
 	"os"
 	"strconv"
@@ -10,11 +12,11 @@ import (
 	"time"
 )
 
-type maxTemp struct{}
+type MaxTemp struct{}
 
 // The input key, value will be filename, text
 // The output would be word, count
-func (maxTemp maxTemp) Mapper(key, value string, out chan mr.Pair) {
+func (mt MaxTemp) Mapper(key, value string, out chan mr.Pair) {
 	strr := strings.NewReader(value)
 	s := bufio.NewScanner(strr)
 	s.Split(bufio.ScanLines)
@@ -34,7 +36,6 @@ func (maxTemp maxTemp) Mapper(key, value string, out chan mr.Pair) {
 		year = words[3]
 		year = year[0:4]
 		out <- mr.Pair{year, maximumTemp}
-		//fmt.Println(count, "    ", year, "   ", maximumTemp)
 
 	}
 	if err := s.Err(); err != nil {
@@ -45,12 +46,11 @@ func (maxTemp maxTemp) Mapper(key, value string, out chan mr.Pair) {
 
 // The reducer receives a word, <list of counts>
 // It adds up all the counts and outputs a word, combined_count
-func (maxTemp maxTemp) Reducer(key string, value []string, out chan mr.Pair) {
+func (mt MaxTemp) Reducer(key string, value []string, out chan mr.Pair) {
 
 	tempValue := 0.0
 
 	for _, v := range value {
-		//fmt.Println("k: ", key, "v:", v)
 		if v != "\\N" {
 			temperature, err := strconv.ParseFloat(v, 64) //strconv.Atoi(v)
 			if err != nil {
@@ -64,24 +64,27 @@ func (maxTemp maxTemp) Reducer(key string, value []string, out chan mr.Pair) {
 		}
 	}
 	out <- mr.Pair{key, strconv.FormatFloat(tempValue, 'g', -1, 64)}
-	//out <- mr.Pair{key, strconv.Itoa(tempValue)}
 }
+
+var (
+	inputdir = flag.String("inputdir", ".", "Input directory")
+	output   = flag.String("output", "maxtempoutput", "Output file")
+)
 
 func main() {
 
-	t0 := time.Now()
-	
-	maxTemperature := maxTemp{}
+	mt := MaxTemp{}
 	fmt.Println(" ====== GETTING THE MAXIMUM TEMPERATURES FROM THE DATASET ====== ")
 	// Ouput all key-value pairs
-	out := mr.Run(maxTemperature, "/home/nitin/cloudAssignment/inputs")
 
-	for p := range out {
-		f := p.First
-		s := p.Second
-		fmt.Println(f, " : ", s)
+	o, err := os.Create(*output)
+	if err != nil {
+		log.Fatal("Could not create output file, err: ", err)
 	}
-	
-	t1 := time.Now()
-	fmt.Printf("The MR call took %v to run.\n", t1.Sub(t0))
+
+	t0 := time.Now()
+	mr.Run(mt, *inputdir, o)
+	d := time.Since(t0)
+	fmt.Println("GoMapReduce max temp took " + d.String())
+
 }

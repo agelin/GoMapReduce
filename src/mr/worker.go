@@ -6,14 +6,7 @@ import (
 	"hash/adler32"
 	"log"
 	"net"
-	"os"
 	"sync"
-)
-
-const (
-	IW = iota // Initialized worker
-	UW = iota // Unintialized worker
-	SW = iota // Stopped worker
 )
 
 // Map of reducer num to reducer data.
@@ -38,7 +31,7 @@ var numRedData int
 // Hash used to calculate hash of intermediate key
 var h hash.Hash32
 
-func RunWorker(mr MapReduce) {
+func RunWorker(mr MapReduce, quitWorker chan bool) {
 
 	// Initialize data structures
 	allRData = make(map[int]map[string][]string)
@@ -48,8 +41,6 @@ func RunWorker(mr MapReduce) {
 	redDoneChan = make(chan bool)
 	h = adler32.New()
 
-	state := UW // Initially all workers are uninitialized
-
 	// Listen to incoming requests
 	l, err := net.Listen("tcp", MyIP)
 	if err != nil {
@@ -57,35 +48,37 @@ func RunWorker(mr MapReduce) {
 	}
 	log.Printf("W%d : Listening at IP %s\n", MyRank, MyIP)
 
+	log.Printf("W%d : In UW State\n", MyRank)
+	// Uninitialized worker
+	// Block on an incoming connection from master
+	// If the master is up, it will initiate a TCP connection
+	// and close it immediately.
+	c, err := l.Accept()
+	log.Printf("W%d : Received connection from master, initialized\n", MyRank)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := c.Close(); err != nil {
+		log.Fatal(err)
+	}
+
+	/**************************************************************/
+	/* 			Initialized worker now listening to				  */
+	/*			master & other worker action messages  			  */
+	/**************************************************************/
+
 	for {
 
-		switch state {
+		log.Printf("W%d : In IW State\n", MyRank)
 
-		case UW:
-			log.Printf("W%d : In SW State\n", MyRank)
-			// Uninitialized worker
-			// Block on an incoming connection from master
-			// If the master is up, it will initiate a TCP connection
-			// and close it immediately.
-			c, err := l.Accept()
-			log.Printf("W%d : Received connection from master, initialized\n", MyRank)
-			if err != nil {
-				log.Fatal(err)
-			}
-			state = IW
-			if err := c.Close(); err != nil {
-				log.Fatal(err)
-			}
+		// Initialized worker
+		var c net.Conn
+		var err error
+		if c, err = l.Accept(); err != nil {
+			log.Fatal(err)
+		}
 
-		case IW:
-			log.Printf("W%d : In IW State\n", MyRank)
-
-			// Initialized worker
-			var c net.Conn
-			var err error
-			if c, err = l.Accept(); err != nil {
-				log.Fatal(err)
-			}
+		go func(c net.Conn) {
 
 			var mode string
 
@@ -396,8 +389,11 @@ func RunWorker(mr MapReduce) {
 				}
 				log.Printf("W%d : All reducers are done! \n", MyRank)
 
-				// End the life of the worker
-				state = SW
+				/**************************************************************/
+				/*					End life of the worker	  				  */
+				/**************************************************************/
+				log.Printf("W%d : Stopping Worker\n", MyRank)
+				quitWorker <- true
 
 			default:
 				log.Fatal("Not a supported message type... exiting!")
@@ -405,11 +401,7 @@ func RunWorker(mr MapReduce) {
 			if err := c.Close(); err != nil {
 				log.Fatal(err)
 			}
-		case SW:
-			log.Printf("W%d : Reached SW state\n", MyRank)
-			os.Exit(0)
-		}
-
+		}(c)
 	}
 
 }

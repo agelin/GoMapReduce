@@ -7,6 +7,8 @@ import (
 	"os"
 	"strings"
 	"time"
+	"flag"
+	"log"
 )
 
 type WC struct{}
@@ -41,26 +43,23 @@ func (wc WC) Reducer(key string, value []string, out chan mr.Pair) {
 
 }
 
+var (
+	inputdir = flag.String("inputdir", ".", "Input directory")
+	output   = flag.String("output", "langdictoutput", "Output file")
+)
+
 func main() {
 	wc := WC{}
-	of, err := os.Create("output")
-	defer of.Close()
 
+	o, err := os.Create(*output)
 	if err != nil {
-		return
+		log.Fatal("Could not create output file, err: ", err)
 	}
+
 
 	t0 := time.Now()
-
-	// Ouput all key-value pair
-	out := mr.Run(wc, "input")
-
-	for p := range out {
-		translatedline := p.First + "\t" + p.Second
-		of.WriteString(translatedline)
-		of.WriteString("\n")
-	}
-	fmt.Print("Time Taken: ")
-	fmt.Println(time.Since(t0).Seconds()*float64(time.Second/time.Millisecond))
+	mr.Run(wc, *inputdir, o)
+	d := time.Since(t0)
+	fmt.Println("GoMapReduce lang dictionary took " + d.String())
 
 }

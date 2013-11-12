@@ -1,13 +1,15 @@
 package main
 
 import (
-	"os"
 	"bufio"
+	"flag"
 	"fmt"
 	"mr"
-	"strings"
+	"os"
 	"strconv"
+	"strings"
 	"time"
+	"log"
 )
 
 type WC struct{}
@@ -20,11 +22,7 @@ func (wc WC) Mapper(key, value string, out chan mr.Pair) {
 	s.Split(bufio.ScanWords)
 	for s.Scan() {
 		word := s.Text()
-		ch:=word[0]
-		strng:=string(ch)
-		length:=len(word)
-		strlng:=strconv.Itoa(length)
-		out <- mr.Pair{strng, strlng}
+		out <- mr.Pair{word, "1"}
 		//fmt.Println(word)
 	}
 	if err := s.Err(); err != nil {
@@ -46,41 +44,30 @@ func (wc WC) Reducer(key string, value []string, out chan mr.Pair) {
 		}
 		count += c
 	}
-	avg:=len(value)
-	count=count/avg
-	out <- mr.Pair{key, strconv.Itoa(count)} 
+	out <- mr.Pair{key, strconv.Itoa(count)}
 }
 
+var (
+	inputdir = flag.String("inputdir", ".", "Input directory")
+	output   = flag.String("output", "wordcountoutput", "Output file")
+)
+
 func main() {
-	  
+
+	flag.Parse()
+
 	wc := WC{}
-	//File output
-	of,err := os.Create("/home/srikanth/New/Output")
-        defer of.Close()
 
-        if err!=nil {
-                return
-        }
-
-        t0 := time.Now()
-	
-	
 	// Ouput all key-value pairs
-	out := mr.Run(wc, "/home/srikanth/New/")
-	
-	for p := range out {
-                averagewordcount := p.First + " - " + p.Second
-                of.WriteString(averagewordcount)
-                of.WriteString("\n")
-        }
-        fmt.Print("Time Taken: ")
-        fmt.Println(time.Since(t0))
-	/*
-	for p := range out {
-		f := p.First
-		s := p.Second
-		fmt.Println(f, " ", s)
+	o, err := os.Create(*output)
+	if err != nil {
+		log.Fatal("Could not create output file, err: ", err)
 	}
-	*/
-	
+
+	t0 := time.Now()
+	mr.Run(wc, *inputdir, o)
+	d := time.Since(t0)
+	fmt.Println("GoMapReduce Word count took " + d.String())
+
+
 }

@@ -1,14 +1,15 @@
 package main
 
 import (
-	"os"
 	"bufio"
-	"fmt"
-	"mr"
-	"strings"
-	"strconv"
-	"time"
 	"flag"
+	"fmt"
+	"log"
+	"mr"
+	"os"
+	"strconv"
+	"strings"
+	"time"
 )
 
 type WC struct{}
@@ -21,8 +22,11 @@ func (wc WC) Mapper(key, value string, out chan mr.Pair) {
 	s.Split(bufio.ScanWords)
 	for s.Scan() {
 		word := s.Text()
-		out <- mr.Pair{word, "1"}
-		//fmt.Println(word)
+		ch := word[0]
+		strng := string(ch)
+		length := len(word)
+		strlng := strconv.Itoa(length)
+		out <- mr.Pair{strng, strlng}
 	}
 	if err := s.Err(); err != nil {
 		fmt.Fprintln(os.Stderr, "reading file :", err)
@@ -35,7 +39,6 @@ func (wc WC) Mapper(key, value string, out chan mr.Pair) {
 func (wc WC) Reducer(key string, value []string, out chan mr.Pair) {
 	count := 0
 	for _, v := range value {
-		//fmt.Println("k: ", key, "v:", v)
 		c, err := strconv.Atoi(v)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "error converting \"", v, "\" to integer, err:", err)
@@ -43,41 +46,28 @@ func (wc WC) Reducer(key string, value []string, out chan mr.Pair) {
 		}
 		count += c
 	}
-	out <- mr.Pair{key, strconv.Itoa(count)} 
+	avg := len(value)
+	count = count / avg
+	out <- mr.Pair{key, strconv.Itoa(count)}
 }
-
 
 var (
 	inputdir = flag.String("inputdir", ".", "Input directory")
-	)
+	output   = flag.String("output", "avgwcoutput", "Output file")
+)
 
 func main() {
-	
-	flag.Parse()
 
 	wc := WC{}
-//	of,err := os.Create("/cise/homes/kota/Output123")
-//        defer of.Close()
-//
-//        if err!=nil {
-//                return
-//        }
-	 t0 := time.Now()
-	// Ouput all key-value pairs
-	mr.Run(wc, *inputdir, os.Stdout)
-//	for p := range out {
-//                single := p.First + " - " + p.Second
-//                of.WriteString(single)
-//                of.WriteString("\n")
-//        }
-        fmt.Print("Time Taken: ")
-        fmt.Println(time.Since(t0))
-	/*
-	for p := range out {
-		f := p.First
-		s := p.Second
-		fmt.Println(f, " ", s)
+
+	o, err := os.Create(*output)
+	if err != nil {
+		log.Fatal("Could not create output file, err: ", err)
 	}
-	*/
-	
+
+	t0 := time.Now()
+	mr.Run(wc, *inputdir, o)
+	d := time.Since(t0)
+	fmt.Println("GoMapReduce average word count took " + d.String())
+
 }

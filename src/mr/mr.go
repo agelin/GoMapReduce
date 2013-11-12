@@ -11,6 +11,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Pair struct {
@@ -150,10 +151,20 @@ func Run(mr MapReduce, inputdir string, output io.Writer) {
 	}
 
 	// If master, Run Server
+	quit := make(chan bool)
+	t0 := time.Now()
 	if MyRank == 0 {
-		RunServer(inputdir, output)
+		go RunServer(inputdir, output, quit)
+		<-quit
+		d := time.Since(t0)
+		o := fmt.Sprintf("M: Duration of master : %s\n", d.String())
+		log.Println(o)
 	} else { // Run worker
-		RunWorker(mr)
+		go RunWorker(mr, quit)
+		<-quit
+		d := time.Since(t0)
+		o := fmt.Sprintf("W%d : Duration of worker : %s\n", MyRank, d.String())
+		log.Println(o)
 	}
 }
 
