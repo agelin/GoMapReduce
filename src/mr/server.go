@@ -38,13 +38,13 @@ func RunServer(inputdir string, output io.Writer) {
 	for k := 1; k < len(NodesMap); k++ {
 		v := NodesMap[k]
 		log.Printf("M : Connecting to worker %d at address %s\n", k, v)
-		_, err := net.Dial("tcp", v)
+		c, err := net.Dial("tcp", v)
 		if err != nil {
 			log.Fatal(err)
 		}
-		//		if err := c.Close(); err != nil {
-		//			log.Fatal(err)
-		//		}
+		if err := c.Close(); err != nil {
+			log.Fatal(err)
+		}
 	}
 	log.Printf("M : All workers initialized\n")
 
@@ -120,9 +120,9 @@ func RunServer(inputdir string, output io.Writer) {
 
 				log.Printf("M : Sent map data to worker %d\n", mr)
 
-				//				if err := iwc.Close(); err != nil {
-				//					log.Fatal(err)
-				//				}
+				if err := iwc.Close(); err != nil {
+					log.Fatal(err)
+				}
 			}
 		}
 
@@ -168,8 +168,8 @@ func RunServer(inputdir string, output io.Writer) {
 
 			var mode string
 			var msg ActionMessage
-			mdec := json.NewDecoder(c)
-			if err := mdec.Decode(&msg); err != nil {
+			dec := json.NewDecoder(c)
+			if err := dec.Decode(&msg); err != nil {
 				log.Fatal(err)
 			}
 			mode = msg.Msg
@@ -186,7 +186,7 @@ func RunServer(inputdir string, output io.Writer) {
 
 				// Get reducers from all mappers
 				var m2r MapperToReducersInfo
-				dec := json.NewDecoder(c)
+				//				dec := json.NewDecoder(c)
 				if err := dec.Decode(&m2r); err != nil {
 					log.Fatal(err)
 				}
@@ -253,9 +253,9 @@ func RunServer(inputdir string, output io.Writer) {
 
 						log.Printf("M : Added worker %d to the set of working reducers\n", k)
 
-						//						if err := rc.Close(); err != nil {
-						//							log.Fatal(err)
-						//						}
+						if err := rc.Close(); err != nil {
+							log.Fatal(err)
+						}
 					}
 				}
 
@@ -268,7 +268,7 @@ func RunServer(inputdir string, output io.Writer) {
 
 				// Get data from mapper
 				var rd ReducedData
-				dec := json.NewDecoder(c)
+				//				dec := json.NewDecoder(c)
 				if err := dec.Decode(&rd); err != nil {
 					log.Fatal(err)
 				}
@@ -302,9 +302,9 @@ func RunServer(inputdir string, output io.Writer) {
 
 				log.Printf("M : Sent \"EndLifeMSG\" to worker %d\n", rd.Reducer)
 
-				//				if err := rc.Close(); err != nil {
-				//					log.Fatal(err)
-				//				}
+				if err := rc.Close(); err != nil {
+					log.Fatal(err)
+				}
 
 				// When last mapper sends data
 				// switch state to SM
@@ -319,9 +319,9 @@ func RunServer(inputdir string, output io.Writer) {
 			default:
 				log.Fatal("Master received unexpected message...")
 			}
-			//			if err := c.Close(); err != nil {
-			//				log.Fatal(err)
-			//			}
+			if err := c.Close(); err != nil {
+				log.Fatal(err)
+			}
 
 		case SM:
 			log.Printf("M : Now in SM state")

@@ -67,15 +67,15 @@ func RunWorker(mr MapReduce) {
 			// Block on an incoming connection from master
 			// If the master is up, it will initiate a TCP connection
 			// and close it immediately.
-			_, err := l.Accept()
+			c, err := l.Accept()
 			log.Printf("W%d : Received connection from master, initialized\n", MyRank)
 			if err != nil {
 				log.Fatal(err)
 			}
 			state = IW
-			//			if err := c.Close(); err != nil {
-			//				log.Fatal(err)
-			//			}
+			if err := c.Close(); err != nil {
+				log.Fatal(err)
+			}
 
 		case IW:
 			log.Printf("W%d : In IW State\n", MyRank)
@@ -98,8 +98,8 @@ func RunWorker(mr MapReduce) {
 			//			}
 
 			var msg ActionMessage
-			mdec := json.NewDecoder(c)
-			if err := mdec.Decode(&msg); err != nil {
+			dec := json.NewDecoder(c)
+			if err := dec.Decode(&msg); err != nil {
 				log.Fatal(err)
 			}
 
@@ -124,7 +124,7 @@ func RunWorker(mr MapReduce) {
 				//				}
 
 				var md MapData
-				dec := json.NewDecoder(c)
+				//				dec := json.NewDecoder(c)
 				if err := dec.Decode(&md); err != nil {
 					log.Fatal(err)
 				}
@@ -232,9 +232,9 @@ func RunWorker(mr MapReduce) {
 				}
 				log.Printf("W%d : Send master the reducer list\n", MyRank)
 
-				//				if err := mc.Close(); err != nil {
-				//					log.Fatal(err)
-				//				}
+				if err := mc.Close(); err != nil {
+					log.Fatal(err)
+				}
 
 			case ReduceMSG:
 				log.Printf("W%d : Got \"ReduceMSG\" \n", MyRank)
@@ -242,7 +242,7 @@ func RunWorker(mr MapReduce) {
 				// Get list of IWs to get data from
 				numRedData = numRedData + 1
 				var iwr IWRanks
-				dec := json.NewDecoder(c)
+				//				dec := json.NewDecoder(c)
 				if err := dec.Decode(&iwr); err != nil {
 					log.Fatal(err)
 				}
@@ -281,16 +281,16 @@ func RunWorker(mr MapReduce) {
 						log.Printf("W%d : Sent own rank to worker to get reducer input data from worker %d\n", MyRank, rank)
 
 						// Expect data on same channel
-						dec := json.NewDecoder(iwc)
-						if err = dec.Decode(&redd); err != nil {
+						ddec := json.NewDecoder(iwc)
+						if err = ddec.Decode(&redd); err != nil {
 							log.Fatal(err)
 						}
 
 						log.Printf("W%d : Got all reducer input data from worker %d\n", MyRank, rank)
 
-						//						if err := iwc.Close(); err != nil {
-						//							log.Fatal(err)
-						//						}
+						if err := iwc.Close(); err != nil {
+							log.Fatal(err)
+						}
 					} else { // If i have data, just copy it over
 						redd.M = allRData[MyRank]
 						log.Printf("W%d : I had the data, just copied it over\n", MyRank)
@@ -370,7 +370,7 @@ func RunWorker(mr MapReduce) {
 
 				// Read rank of IW
 				var rd RequestData
-				dec := json.NewDecoder(c)
+				//				dec := json.NewDecoder(c)
 				if err := dec.Decode(&rd); err != nil {
 					log.Fatal(err)
 				}
@@ -402,9 +402,9 @@ func RunWorker(mr MapReduce) {
 			default:
 				log.Fatal("Not a supported message type... exiting!")
 			}
-			//			if err := c.Close(); err != nil {
-			//				log.Fatal(err)
-			//			}
+			if err := c.Close(); err != nil {
+				log.Fatal(err)
+			}
 		case SW:
 			log.Printf("W%d : Reached SW state\n", MyRank)
 			os.Exit(0)
