@@ -1,7 +1,6 @@
 package mr
 
 import (
-	"bufio"
 	"encoding/json"
 	"io"
 	"io/ioutil"
@@ -39,11 +38,13 @@ func RunServer(inputdir string, output io.Writer) {
 	for k := 1; k < len(NodesMap); k++ {
 		v := NodesMap[k]
 		log.Printf("M : Connecting to worker %d at address %s\n", k, v)
-		c, err := net.Dial("tcp", v)
+		_, err := net.Dial("tcp", v)
 		if err != nil {
 			log.Fatal(err)
 		}
-		c.Close()
+		//		if err := c.Close(); err != nil {
+		//			log.Fatal(err)
+		//		}
 	}
 	log.Printf("M : All workers initialized\n")
 
@@ -63,7 +64,7 @@ func RunServer(inputdir string, output io.Writer) {
 	for _, f := range files {
 		if !f.IsDir() {
 			log.Printf("M : Splitting data for file %s\n", f.Name())
-			
+
 			fullPath := inputdir + "/" + f.Name()
 			data, err := ioutil.ReadFile(fullPath)
 			if err != nil {
@@ -72,7 +73,7 @@ func RunServer(inputdir string, output io.Writer) {
 			// Call Splitter for each file. Split each file across all available Mapppers
 			splitConf := SplitConf{"\n", 200} // Configure the Splitter i.e., seperator and count
 			md := SplitData(string(data), splitConf)
-			
+
 			log.Printf("M : Data split for file %s\n", f.Name())
 
 			for mr, v := range md {
@@ -92,7 +93,7 @@ func RunServer(inputdir string, output io.Writer) {
 				if err = menc.Encode(&msg); err != nil {
 					log.Fatal(err)
 				}
-				
+
 				log.Printf("M : Sent \"MapMSG\" to worker %d\n", mr)
 
 				workingMappers[mr] = true
@@ -102,46 +103,48 @@ func RunServer(inputdir string, output io.Writer) {
 
 				var md MapData
 				md.M = make(map[string]string)
-				key := f.Name() + "$" + strconv.Itoa(mr) // $ can be latter used to split
+				key := f.Name() + "$" + strconv.Itoa(mr) // $ can be later used to split
 
 				md.M[key] = v
 
-				// Debuggin JSON data
-				// 	denc := json.NewEncoder(os.Stdout)
-				//	if err = denc.Encode(&md); err != nil {
-				//		log.Fatal(err)
-				//	}
+				//Debuggin JSON data
+				//				denc := json.NewEncoder(os.Stdout)
+				//				if err = denc.Encode(&md); err != nil {
+				//					log.Fatal(err)
+				//				}
 
 				enc := json.NewEncoder(iwc)
 				if err = enc.Encode(&md); err != nil {
 					log.Fatal(err)
 				}
-				
+
 				log.Printf("M : Sent map data to worker %d\n", mr)
-				
-				iwc.Close()
+
+				//				if err := iwc.Close(); err != nil {
+				//					log.Fatal(err)
+				//				}
 			}
 		}
 
-		// Send "End of Map" data to every worker
-		for mr, _ := range workingMappers {			
-		
-			var iwc net.Conn
-			var err error
+	}
+	// Send "End of Map" data to every worker
+	for mr, _ := range workingMappers {
 
-			iwip := NodesMap[mr]
-			if iwc, err = net.Dial("tcp", iwip); err != nil {
-				log.Fatal(err)
-			}
+		var iwc net.Conn
+		var err error
 
-			var msg ActionMessage
-			msg.Msg = EndOfMapMSG
-			menc := json.NewEncoder(iwc)
-			if err = menc.Encode(&msg); err != nil {
-				log.Fatal(err)
-			}
-			log.Printf("M : Sending \"EndOfMapMSG\" to worker %d\n", mr)
+		iwip := NodesMap[mr]
+		if iwc, err = net.Dial("tcp", iwip); err != nil {
+			log.Fatal(err)
 		}
+
+		var msg ActionMessage
+		msg.Msg = EndOfMapMSG
+		menc := json.NewEncoder(iwc)
+		if err = menc.Encode(&msg); err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("M : Sending \"EndOfMapMSG\" to worker %d\n", mr)
 	}
 	// Switch state to listen on messages from workers
 	state = IM
@@ -151,19 +154,18 @@ func RunServer(inputdir string, output io.Writer) {
 		log.Fatal(err)
 	}
 	log.Printf("M : Listening at IP : %s\n", MyIP)
-		
+
 	for {
 		switch state {
 		case IM:
 			log.Printf("M : IM State\n")
-			
+
 			var c net.Conn
 			var err error
 			if c, err = l.Accept(); err != nil {
 				log.Fatal(err)
 			}
 
-			b := bufio.NewReader(c)
 			var mode string
 			var msg ActionMessage
 			mdec := json.NewDecoder(c)
@@ -175,7 +177,7 @@ func RunServer(inputdir string, output io.Writer) {
 
 			switch mode {
 			case ReduceWorkersMSG:
-			
+
 				log.Printf("M : Got message \"ReduceWorkersMSG\"\n")
 
 				if len(workingMappers) == 0 {
@@ -184,13 +186,13 @@ func RunServer(inputdir string, output io.Writer) {
 
 				// Get reducers from all mappers
 				var m2r MapperToReducersInfo
-				dec := json.NewDecoder(b)
+				dec := json.NewDecoder(c)
 				if err := dec.Decode(&m2r); err != nil {
 					log.Fatal(err)
 				}
-				
+
 				log.Printf("M : Got all reducers to which worker %d needs to send data\n", m2r.Mapper)
-				
+
 				// combine into convenient Data structure
 				for _, r := range m2r.Reducers {
 					lst, ok := inReducer[r]
@@ -200,30 +202,28 @@ func RunServer(inputdir string, output io.Writer) {
 					lst = append(lst, m2r.Mapper)
 					inReducer[r] = lst
 				}
-				
+
 				log.Printf("M : Added worker %d to all reducer workers to which it will send data\n", m2r.Mapper)
 
 				delete(workingMappers, m2r.Mapper)
-				
+
 				log.Printf("M : Deleted mapper %d from set of working mappers \n", m2r.Mapper)
-				
 
 				// When last mapper sends data, ask workers to do reduce
 				if len(workingMappers) == 0 {
-					
+
 					log.Printf("M : Deleted LAST mapper (%d) from set of working mappers \n", m2r.Mapper)
-					
-					
+
 					// Send Reducers info about which mappers to get data from
 					// (k is the rank of the reducer while v is the set of workers to get data from)
 					for k, v := range inReducer {
 						// Connect to reducers and send them the
 						// list of mappers to get data from
-						
-						if k == 0{
+
+						if k == 0 {
 							log.Fatal("Sending ReduceMSG to master from master !")
 						}
-						
+
 						ip := NodesMap[k]
 						var rc net.Conn
 						if rc, err = net.Dial("tcp", ip); err != nil {
@@ -235,7 +235,7 @@ func RunServer(inputdir string, output io.Writer) {
 						if err = menc.Encode(&msg); err != nil {
 							log.Fatal(err)
 						}
-						
+
 						log.Printf("M : Sent \"ReduceMSG\" to worker %d\n", k)
 
 						// Send ranks of mappers to get data from to reducers
@@ -245,35 +245,36 @@ func RunServer(inputdir string, output io.Writer) {
 						if err = enc.Encode(&iwr); err != nil {
 							log.Fatal(err)
 						}
-						
+
 						log.Printf("M : Sent set of worker ranks to get reducer input from to worker %d\n", k)
 
 						// Add to the set of working reducers
 						workingReducers[k] = true
-						
+
 						log.Printf("M : Added worker %d to the set of working reducers\n", k)
-						
-						rc.Close()
+
+						//						if err := rc.Close(); err != nil {
+						//							log.Fatal(err)
+						//						}
 					}
 				}
 
 			case ReducedDataMSG:
 				log.Printf("M : Got message \"ReducedDataMSG\"\n")
-			
+
 				if len(workingReducers) == 0 {
 					log.Fatalf("Got reduced data from a reducer when I've already received all data !")
 				}
 
 				// Get data from mapper
 				var rd ReducedData
-				dec := json.NewDecoder(b)
+				dec := json.NewDecoder(c)
 				if err := dec.Decode(&rd); err != nil {
 					log.Fatal(err)
 				}
-				
+
 				log.Printf("M : Got ReducedData instance from %d\n", rd.Reducer)
-				
-	
+
 				// Print final reduced data - different thread ? to a file ?
 
 				for _, p := range rd.Data {
@@ -283,9 +284,8 @@ func RunServer(inputdir string, output io.Writer) {
 					toprint := k + "\t" + v + "\n"
 					output.Write([]byte(toprint))
 				}
-				
+
 				log.Printf("M : Ouput reduced data from worker %d to io.Writer instance \n", rd.Reducer)
-				
 
 				// Send "End life" message to that reducer
 				ip := NodesMap[rd.Reducer]
@@ -299,15 +299,17 @@ func RunServer(inputdir string, output io.Writer) {
 				if err = menc.Encode(&msg); err != nil {
 					log.Fatal(err)
 				}
-				
+
 				log.Printf("M : Sent \"EndLifeMSG\" to worker %d\n", rd.Reducer)
-				
-				rc.Close()
-				
+
+				//				if err := rc.Close(); err != nil {
+				//					log.Fatal(err)
+				//				}
+
 				// When last mapper sends data
 				// switch state to SM
 				delete(workingReducers, rd.Reducer)
-				
+
 				log.Printf("M : Deleted reducer %d from set of working reducers\n", rd.Reducer)
 
 				if len(workingReducers) == 0 {
@@ -317,9 +319,10 @@ func RunServer(inputdir string, output io.Writer) {
 			default:
 				log.Fatal("Master received unexpected message...")
 			}
-			c.Close()
-			
-			
+			//			if err := c.Close(); err != nil {
+			//				log.Fatal(err)
+			//			}
+
 		case SM:
 			log.Printf("M : Now in SM state")
 			os.Exit(0)
