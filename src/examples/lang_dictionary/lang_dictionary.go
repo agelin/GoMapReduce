@@ -59,7 +59,7 @@ func main() {
 
 	t0 := time.Now()
 	mr.Run(wc, *inputdir, o)
-	d := time.Since(t0)
+	d := time.Since(t0).Seconds()*float64(time.Second/time.Millisecond)
 	fmt.Println("GoMapReduce lang dictionary took " + d.String())
 
 }
