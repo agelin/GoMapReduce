@@ -1,0 +1,84 @@
+Observations:
+-------------
+System		:lin116-22.cise.ufl.edu
+
+Size of DataSet	:87369
+
+GoMapReduce Time:
+	Run 1 	:44.520706ms
+	Run 2 	:42.569586ms
+	Run 3 	:42.430169ms
+	Run 4 	:48.430577ms
+	Run 5 	:43.984291ms
+	Run 6 	:49.813243ms
+	 Average Run Time	:	45.2914286666667ms
+
+Hadoop Time:
+	Run 1 	:1594ms
+	Run 2 	:1582ms
+	Run 3 	:1595ms
+	Run 4 	:1590ms
+	Run 5 	:1579ms
+	Run 6 	:1587ms
+	 Average Run Time	:1587.83333333333ms
+
+Size of DataSet	:298377
+
+GoMapReduce Time:
+	Run 1 	:138.471896ms
+	Run 2 	:148.713081ms
+	Run 3 	:142.398912ms
+	Run 4 	:143.104664ms
+	Run 5 	:139.319757ms
+	Run 6 	:141.621458ms
+	 Average Run Time	:	142.271628ms
+
+Hadoop Time:
+	Run 1 	:2584ms
+	Run 2 	:2585ms
+	Run 3 	:2585ms
+	Run 4 	:2606ms
+	Run 5 	:2611ms
+	Run 6 	:2608ms
+	 Average Run Time	:2596.5ms
+
+Size of DataSet	:427113
+
+GoMapReduce Time:
+	Run 1 	:165.824863ms
+	Run 2 	:167.112604ms
+	Run 3 	:164.44343ms
+	Run 4 	:175.668635ms
+	Run 5 	:163.748299ms
+	Run 6 	:169.409117ms
+	 Average Run Time	:	167.701158ms
+
+Hadoop Time:
+	Run 1 	:2581ms
+	Run 2 	:2581ms
+	Run 3 	:2579ms
+	Run 4 	:2610ms
+	Run 5 	:2580ms
+	Run 6 	:2587ms
+	 Average Run Time	:2586.33333333333ms
+
+Size of DataSet	:598677
+
+GoMapReduce Time:
+	Run 1 	:251.479999ms
+	Run 2 	:249.91074ms
+	Run 3 	:243.492118ms
+	Run 4 	:243.446105ms
+	Run 5 	:251.518829ms
+	Run 6 	:241.826085ms
+	 Average Run Time	:	246.945646ms
+
+Hadoop Time:
+	Run 1 	:2614ms
+	Run 2 	:2604ms
+	Run 3 	:2604ms
+	Run 4 	:2581ms
+	Run 5 	:2584ms
+	Run 6 	:2592ms
+	 Average Run Time	:2596.5ms
+
