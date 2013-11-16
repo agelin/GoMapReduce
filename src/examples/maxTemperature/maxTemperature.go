@@ -71,15 +71,28 @@ func main() {
 
 	t0 := time.Now()
 	
+	of, err := os.Create("output")
+	defer of.Close()
+	
+	if err != nil {
+		return
+	}
+	
 	maxTemperature := maxTemp{}
 	fmt.Println(" ====== GETTING THE MAXIMUM TEMPERATURES FROM THE DATASET ====== ")
 	// Ouput all key-value pairs
 	out := mr.Run(maxTemperature, "/home/nitin/cloudAssignment/inputs")
 
-	for p := range out {
+	/*for p := range out {
 		f := p.First
 		s := p.Second
 		fmt.Println(f, " : ", s)
+	}*/
+	
+	for p := range out {
+		translatedline := p.First + "\t" + p.Second
+		of.WriteString(translatedline)
+		of.WriteString("\n")
 	}
 	
 	t1 := time.Now()
