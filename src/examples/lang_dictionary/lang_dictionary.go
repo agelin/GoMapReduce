@@ -50,7 +50,7 @@ var (
 
 func main() {
 	wc := WC{}
-
+    flag.Parse()
 	o, err := os.Create(*output)
 	if err != nil {
 		log.Fatal("Could not create output file, err: ", err)
@@ -59,7 +59,7 @@ func main() {
 
 	t0 := time.Now()
 	mr.Run(wc, *inputdir, o)
-	d := time.Since(t0).Seconds()*float64(time.Second/time.Millisecond)
+	d := time.Since(t0).Seconds()
 	fmt.Println("GoMapReduce lang dictionary took " + d.String())
 
 }

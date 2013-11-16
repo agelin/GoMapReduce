@@ -74,6 +74,7 @@ var (
 func main() {
 
 	mt := MaxTemp{}
+    flag.Parse()
 	fmt.Println(" ====== GETTING THE MAXIMUM TEMPERATURES FROM THE DATASET ====== ")
 	// Ouput all key-value pairs
 

@@ -59,7 +59,7 @@ var (
 func main() {
 
 	wc := WC{}
-
+    flag.Parse()
 	o, err := os.Create(*output)
 	if err != nil {
 		log.Fatal("Could not create output file, err: ", err)

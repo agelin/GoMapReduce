@@ -58,7 +58,7 @@ var (
 
 func main() {
 	ag := AG{}
-
+    flag.Parse()
 	o, err := os.Create(*output)
 	if err != nil {
 		log.Fatal("Could not create output file, err: ", err)
