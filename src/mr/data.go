@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"net"
+	"time"
 )
 
 // This file contains communication specific data structures
@@ -17,6 +19,10 @@ const (
 	EndLifeMSG       string = "f"
 	ReduceWorkersMSG string = "g" // Set of reducers from a mappers to which it will send data [mapper -> master]
 	ReducedDataMSG   string = "h"
+)
+
+const (
+	DialTimeOut = 10 //Seconds
 )
 
 type ActionMessage struct {
@@ -66,4 +72,22 @@ func DebugJSON(r io.Reader) string {
 	str := s.Text()
 	fmt.Println(str)
 	return str
+}
+
+func RetryDial(network string, address string, timeout time.Duration) (c net.Conn, err error) {
+	start := time.Now()
+	var backoff time.Duration = 0
+	for {
+		c, err := net.Dial(network, address)
+		if err == nil{
+			return c, err
+		}
+		now := time.Since(start)
+		time.Sleep(backoff * time.Second)
+		if (now >= timeout) {
+			return c, err
+		}
+		backoff = backoff * 2;
+	}
+
 }

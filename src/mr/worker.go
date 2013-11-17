@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"sync"
+	"time"
 )
 
 // Map of reducer num to reducer data.
@@ -205,7 +206,7 @@ func RunWorker(mr MapReduce, quitWorker chan bool) {
 				// Connect to master
 				masterAddr := NodesMap[0]
 				var mc net.Conn
-				if mc, err = net.Dial("tcp", masterAddr); err != nil {
+				if mc, err = RetryDial("tcp", masterAddr, DialTimeOut*time.Second); err != nil {
 					log.Fatal(err)
 				}
 
@@ -252,7 +253,7 @@ func RunWorker(mr MapReduce, quitWorker chan bool) {
 					if rank != MyRank {
 						iwaddr := NodesMap[rank]
 						var iwc net.Conn
-						if iwc, err = net.Dial("tcp", iwaddr); err != nil {
+						if iwc, err = RetryDial("tcp", iwaddr, DialTimeOut*time.Second); err != nil {
 							log.Fatal(err)
 						}
 
@@ -331,7 +332,8 @@ func RunWorker(mr MapReduce, quitWorker chan bool) {
 					// Send data to master
 					masterAddr := NodesMap[0]
 					var mc net.Conn
-					if mc, err = net.Dial("tcp", masterAddr); err != nil {
+					time.Sleep(1000 * time.Millisecond)
+					if mc, err = RetryDial("tcp", masterAddr, DialTimeOut*time.Second); err != nil {
 						log.Fatal(err)
 					}
 
