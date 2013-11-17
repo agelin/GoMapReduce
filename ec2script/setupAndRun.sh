@@ -15,12 +15,12 @@ for i in $ALLNODES;
 do 
     echo $i; 
     scp -o 'StrictHostKeyChecking no' aec2_script.sh ubuntu@$i:/home/ubuntu;
-    scp -o 'StrictHostKeyChecking no' config ubuntu@$i:/home/ubuntu/GoMapReduce/bin/
     ssh -o 'StrictHostKeyChecking no' ubuntu@$i \
 		'echo $i; \
 		/sbin/ifconfig; \
         chmod 711 aec2_script.sh; \
 		sh /home/ubuntu/aec2_script.sh' 
+    scp -o 'StrictHostKeyChecking no' config ubuntu@$i:/home/ubuntu/GoMapReduce/bin/
     if [ $j -ne 0 ]; then
     ssh -o 'StrictHostKeyChecking no' ubuntu@$i \
         "nohup /home/ubuntu/GoMapReduce/bin/word_count -rank=$j -config=/home/ubuntu/GoMapReduce/bin/config -inputdir=/home/ubuntu/input/ &"
