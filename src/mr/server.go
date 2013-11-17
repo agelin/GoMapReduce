@@ -293,24 +293,26 @@ func RunServer(inputdir string, output io.Writer, quitServer chan bool) {
 
                     // Send "End life" message to that reducer
                     for k, v := range NodesMap {
-                        log.Printf("M : Sending end of life to %d\n", k)
-                        ip := v
-                        var rc net.Conn
-                        if rc, err = net.Dial("tcp", ip); err != nil {
-                            log.Fatal(err)
-                        }
-                        var msg ActionMessage
-                        msg.Msg = EndLifeMSG
-                        menc := json.NewEncoder(rc)
-                        if err = menc.Encode(&msg); err != nil {
-                            log.Fatal(err)
-                        }
+                        if k != MyRank {
+                            log.Printf("M : Sending end of life to %d\n", k)
+                            ip := v
+                            var rc net.Conn
+                            if rc, err = net.Dial("tcp", ip); err != nil {
+                                log.Fatal(err)
+                            }
+                            var msg ActionMessage
+                            msg.Msg = EndLifeMSG
+                            menc := json.NewEncoder(rc)
+                            if err = menc.Encode(&msg); err != nil {
+                                log.Fatal(err)
+                            }
 
-                        log.Printf("M : Sent \"EndLifeMSG\" to worker %d\n", rd.Reducer)
+                            log.Printf("M : Sent \"EndLifeMSG\" to worker %d\n", rd.Reducer)
 
-                        if err := rc.Close(); err != nil {
-                            log.Fatal(err)
-                        }
+                            if err := rc.Close(); err != nil {
+                                log.Fatal(err)
+                            }
+                        }   
                     }
 
 
