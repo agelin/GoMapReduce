@@ -293,7 +293,7 @@ func RunServer(inputdir string, output io.Writer, quitServer chan bool) {
 
                     // Send "End life" message to that reducer
                     for k, v := range NodesMap {
-                        ip := NodesMap[v]
+                        ip := v
                         var rc net.Conn
                         if rc, err = net.Dial("tcp", ip); err != nil {
                             log.Fatal(err)
