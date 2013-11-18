@@ -19,6 +19,7 @@ const (
 	EndLifeMSG       string = "f"
 	ReduceWorkersMSG string = "g" // Set of reducers from a mappers to which it will send data [mapper -> master]
 	ReducedDataMSG   string = "h"
+	MapOutputDataMSG string = "i" // Begin map reduce output
 )
 
 const (
@@ -42,6 +43,7 @@ type MapperToReducersInfo struct {
 
 // Sent mappers -> reducers
 type ReduceData struct {
+	Mapper   int   // Rank of mapper
 	M map[string][]string
 }
 
@@ -76,14 +78,14 @@ func DebugJSON(r io.Reader) string {
 
 func RetryDial(network string, address string, timeout time.Duration) (c net.Conn, err error) {
 	start := time.Now()
-	var backoff time.Duration = 0
+	var backoff time.Duration = 1
 	for {
 		c, err := net.Dial(network, address)
 		if err == nil{
 			return c, err
 		}
-		now := time.Since(start)
 		time.Sleep(backoff * time.Second)
+		now := time.Since(start)
 		if (now >= timeout) {
 			return c, err
 		}
