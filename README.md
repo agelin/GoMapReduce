@@ -16,7 +16,7 @@ $ export GOPATH=${PWD}
 $ go build src/examples/word_count/word_count.go
 ```
 This will create the word_count executable in the current directory.
-Create a config file to run this example on your local machine with the following entries:
+Create a config file (config.txt) to run this example on your local machine with the following entries:
 ```
 0 localhost:56781
 1 localhost:56782
@@ -26,9 +26,9 @@ Each line is a rank followed by an ip:port pair. There should be no extraneous l
 
 In 2 different terminals, launch word_count like so:
 ```BASH
-./word_count -rank=1 -config=config -inputdir=/home/user/input 
+./word_count -rank=1 -config=config.txt -inputdir=/home/user/input 
 
-./word_count -rank=2 -config=config -inputdir=/home/user/input 
+./word_count -rank=2 -config=config.txt -inputdir=/home/user/input 
 ```
 
 These are the workers and they will wait for the master / server (rank 0) to be spawned.
@@ -37,7 +37,7 @@ In these lines "/home/user/input" is the absolute path of the directory where yo
 
 To spawn the server, in a new terminal, say:
 ```BASH
-./word_count -rank=0 -config=config -inputdir=/home/user/input 
+./word_count -rank=0 -config=config.txt -inputdir=/home/user/input 
 ```
 If everything went well, a file by the name "wordcountoutput" will have been created in the working directory of rank 0. Each rank also writes out a log. They are log0, log1, log2 (and so forth). 
 
